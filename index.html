@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
-    <title>Software Carpentry: 자연어 처리 - 텍스트</title>
+    <title>Software Carpentry: 대한민국 제21대 국회의원 선거</title>
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
@@ -37,90 +37,18 @@
       <article>
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
-                    <h1 class="title">자연어 처리 - 텍스트</h1>
-          <aside class="callout panel panel-info">
-<div class="panel-heading">
-<h3 id="ai-is-a-superpower"><span class="glyphicon glyphicon-pushpin"></span>AI is a Superpower</h3>
-</div>
-<div class="panel-body">
-<p>“AI is a superpower!!!”, 인공지능을 체득하면 슈퍼파워를 손에 쥘 것이다. <a href="https://twitter.com/andrewyng/status/728986380638916609">Andrew Ng</a></p>
-<p>금수저, 은수저 슈퍼파워를 받은 사람과 기계학습을 통달한 흑수저들간의 무한경쟁이 드뎌 시작되었다. 물론, 금수저를 입에 물고 기계학습을 통달한 사람이 가장 유리한 출발을 시작한 것도 사실이다.</p>
-</div>
-</aside>
-<h2 id="학습목차">학습목차</h2>
-<ol style="list-style-type: decimal">
-<li><a href="nlp-text.html">텍스트 데이터</a>
-<ol style="list-style-type: decimal">
-<li><a href="nlp-bag-of-words.html">단어주머니(Bag of Words)</a></li>
-<li><a href="https://statkclee.github.io/ds-authoring/">텍스트 데이터와 저작</a></li>
-<li><a href="nlp-zipf-law.html">지프 법칙(Zipf law) - 시군 인구</a><br />
-</li>
-</ol></li>
-<li><strong>텍스트 데이터 다루기</strong>
-<ol style="list-style-type: decimal">
-<li><a href="text-constitution.html">대한민국 헌법</a></li>
-<li><a href="nlp-number-to-text.html">숫자를 문자로 표현</a></li>
-<li><a href="nlp-stringr.html">stringr을 통해 문자열/텍스트 다루기</a></li>
-<li><a href="nlp-text-twitter.html">텍스트 데이터 수집 및 단어문서행렬(TDM) – 트위터</a></li>
-</ol></li>
-<li><strong>단어주머니(Bag of Words)</strong>
-<ol style="list-style-type: decimal">
-<li><a href="nlp-amazon-google.html">아마존 vs. 구글</a></li>
-<li><a href="nlp-movie-play.html">해외연극 등장인물 출현횟수</a></li>
-<li><a href="nlp-movie-arch101.html">국내영화(건축학 개론) 등장인물 출현횟수</a></li>
-<li><a href="nlp-text-basic.html">소설 텍스트 데이터 분석 – 소나기</a></li>
-<li><a href="nlp-book.html">저녁이 있는 삶 – 손학규</a></li>
-<li><a href="http://statkclee.github.io/politics/text-classify-speeches.html">연설문 판별 - 오바마 vs. 롬니</a></li>
-</ol></li>
-<li><strong>감성분석(Sentiment Analysis)</strong>
-<ol style="list-style-type: decimal">
-<li><a href="nlp-sentiment.html">감성분석(Sentiment Analysis) - 깔끔한 텍스트 방식(tidytext)</a></li>
-<li><a href="nlp-text-sentiment-yelp.html">고객 방문후기 평점 감성분석 - 옐프(Yelp)</a></li>
-<li><a href="nlp-english-textbook.html">영어 교과서 감성분석</a></li>
-</ol></li>
-<li><a href="silge-topic-modeling.html">셜록홈즈 - 단어구름에서 토픽모형</a></li>
-<li><strong>기계학습과 딥러닝(Deep Learning)</strong>
-<ol style="list-style-type: decimal">
-<li><a href="nlp-text-classification.html">텍스트 분류(Text Classification) - 나이브 베이즈(naive bayes)</a></li>
-<li><a href="nlp-text-movielens.html">영화 평점 - 무비렌즈(MovieLens)</a></li>
-<li><a href="nlp-spam-machine-learning.html">SMS 스팸분류 - Random Forest</a></li>
-<li><a href="nlp-regex-word2vec.html">정규표현식에서 워드2벡(Word2Vec)</a></li>
-<li><a href="text-kaggle-ecommerce-review.html">캐글 - 전자상거래 옷 리뷰</a></li>
-<li><a href="text-twitter-tidytext-caret.html">재난 트윗 분류기 - <code>tidytext</code>와 <code>caret</code></a></li>
-</ol></li>
-<li><strong>한국어</strong>
-<ol style="list-style-type: decimal">
-<li><strong>한국어 R Meetup - 류충현</strong>: <a href="nlp-president-crawl.html">대통령 연설문 - 데이터 긁어오기</a>, <a href="nlp-president-dtm.html">대통령 연설문 - DTM 만들기</a></li>
-</ol></li>
-<li><strong><a href="text-r-meet-python.html">R 파이썬을 만나다.</a></strong>
-<ol style="list-style-type: decimal">
-<li><a href="nlp-intro-python.html">자연어 처리 입문</a> - 텍스트 → 단어주머니(Bag of Words)</li>
-<li><a href="nlp-intermediate-python.html">자연어 처리 중급</a></li>
-<li><a href="text-python-datatype.html">데이터과학 - 파이썬 자료구조</a></li>
-</ol></li>
-<li><a href="langcon-2019-tutorial.html">LangCon - 자연어 처리의 화장을 하지 않은 얼굴: 튜토리얼</a>
+                    <h1 class="title">대한민국 제21대 국회의원 선거</h1>
+          <ul>
+<li>재보선 2019 선거
 <ul>
-<li>영문
-<ol style="list-style-type: decimal">
-<li><a href="langcon-keynes-hayek.html">케인즈 vs 하이에크</a></li>
-<li><a href="langcon-keynes-hayek-sentiment.html">케인즈 vs 하이에크 - 감성, 핵심어, 연관단어</a></li>
-<li><a href="langcon-keynes-hayek-topic.html">케인즈 vs 하이에크 - 토픽모형</a></li>
-<li><a href="langcon-keynes-hayek-spacyr.html">케인즈 vs 하이에크 - <code>spacyr</code></a></li>
-</ol></li>
-<li>유튜브
-<ol style="list-style-type: decimal">
-<li>한글
-<ol style="list-style-type: decimal">
-<li><a href="nlp-naver-news.html">네이버 뉴스</a></li>
-<li><a href="nlp-tidytext-moon-speech.html">깔끔한 텍스트 (Tidytext) - 신년기자회견(2019)</a></li>
-<li><a href="nlp-naver-news-mecab.html">네이버 뉴스 - RmecabKo (형태소 분석)</a><br />
+<li><a href="by_election_data.html">데이터</a> - 작업중</li>
+<li><a href="by_election_major_election.html">대선, 총선, 지선</a> 작업중</li>
+<li><a href="by_election_precinct_changwon.html">창원시 성산구</a><br />
 </li>
-</ol></li>
-<li><a href="nlp-youtube-comment.html">유트브 댓글</a></li>
-<li><a href="youtube-channel-comment-classification.html">알릴레요 vs. 홍카콜라 - 댓글 분류</a></li>
-</ol></li>
+<li><a href="by_election_precinct.html">보궐선거구</a></li>
 </ul></li>
-</ol>
+<li><a href="president_approval_survey.html">대통령 지지율</a></li>
+</ul>
         </div>
       </div>
       </article>

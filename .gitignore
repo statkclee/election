@@ -15,3 +15,4 @@ data/breast-cancer
 data/*.docx
 .Rhistory
 data/hy_video_comment_list.rds
+doc/

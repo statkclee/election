@@ -1,0 +1,17 @@
+README.html
+LAYOUT.html
+FAQ.html
+DESIGN.html
+CONTRIBUTING.html
+CONDUCT.html
+*~
+*.pyc
+_site
+.DS_Store
+.ipynb_*
+twitterOAuth.R
+.httr-oauth
+data/breast-cancer
+data/*.docx
+.Rhistory
+data/hy_video_comment_list.rds

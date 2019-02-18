@@ -1,0 +1,396 @@
+---
+layout: page
+title: "제21대 국회의원 선거"
+subtitle: "지역내총생산(GRDP)"
+author:
+    name: xwMOOC
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+
+
+```
+
+# 지역내총생산(GRDP)  {#grdp-2017}
+
+**지역내총생산(GRDP: Gross Regional Domestic Product)**은 어떤기간 동안 어떠한 지역에서 생산된 상품과 서비스의 가치를 시장가격으로 평가한 수치로 지역내총생산이 높다는 것은 그 지역 재정자립도가 높다는 것을 의미하고 반대로 지역내총생산이 낮다는 것은 재정자립도가 낮아 중앙정부의 지원이 필요하다는 것을 의미한다. 국내에선 통계청이 1985년부터 16개 광역 시·도의 GRDP를 산출해 발표하고 있으며 지역 경제 분석과 정책 수립에 필요한 기초자료로 활용된다. 국가로 치면 국내총생산(GDP)과 같은 개념이다.
+
+자료는 통계청 [http://kosis.kr/](http://kosis.kr/) 국내통계 &rarr; 주제별통계 &rarr; 국민계정/지역계정 &rarr; 지역소득(2010년 기준)에서 "행정구역(시도)별/경제활동별 지역내총생산" 지역내총생산(GRDP) 데이터를 가져온다.
+
+# 데이터 전처리  {#grdp-2017}
+
+```{r grdp-excel}
+library(tidyverse)
+library(readxl)
+
+grdp_dat <- read_excel("data/101_DT_1C61_20190217115851.xlsx", sheet="데이터",skip=1)
+
+grdp_df <- grdp_dat %>% 
+  rename(`시도별` = `행정구역(시도)별`) %>% 
+  filter(!str_detect(`항목`, "연쇄")) %>% 
+  filter(!str_detect(`경제활동별`, "^\\s+")) %>% 
+  select(-`항목`, -`단위`) %>% 
+  gather(`연도`, `GRDP`,-`시도별`,  -`경제활동별`) %>% 
+  mutate(`연도` = parse_number(`연도`)) %>% 
+  mutate(GRDP = GRDP / 10^6) %>% 
+  mutate(`경제활동별` = factor(`경제활동별`, levels=c("지역내총생산(시장가격)", "총부가가치(기초가격)", 
+"제조업", "순생산물세", "도매및소매업", "부동산업및임대업", "공공행정,국방및사회보장행정", 
+"사업서비스업", "건설업", "금융및보험업", "교육서비스업", "운수업", 
+"출판,영상, 방송통신 및 정보서비스업", "보건업및사회복지서비스업", 
+"농림어업", "문화 및 기타서비스업", "숙박및음식점업", "전기,가스,증기및수도사업", 
+"광업"))) %>% 
+  mutate(`시도별` = factor(`시도별`, levels=c("전국", "경기도", "서울특별시", "충청남도", "경상남도", "경상북도", 
+"인천광역시", "부산광역시", "울산광역시", "전라남도", "충청북도", 
+"대구광역시", "전라북도", "강원도", "대전광역시", "광주광역시", 
+"제주특별자치도")))
+
+# grdp_df %>%
+#   filter(`연도` == 2017) %>%
+#   group_by(`행정구역(시도)별`) %>%
+#   summarise(GRDP= sum(GRDP)) %>%
+#   arrange(desc(GRDP)) %>%
+#   pull(`행정구역(시도)별`) %>%
+#   dput()
+
+```
+
+
+# 시도별 GRDP 추세  {#grdp-sido}
+
+- e-나라지표: [지역내총생산(GRDP)](http://www.index.go.kr/potal/main/EachDtlPageDetail.do?idx_cd=1008)
+
+```{r grdp-sido-trend}
+library(highcharter)
+
+grdp_df %>% 
+  filter(str_detect(`경제활동별`, "지역내총생산")) %>% 
+  hchart(hcaes(x=`연도`, y=GRDP, group=`시도별`), type="line") %>% 
+  hc_title(text = "시도별 GRDP 추세") %>%
+  hc_subtitle(text = "1985 ~ 2017년, 단위: 조원") %>% 
+  hc_tooltip(shared = TRUE,
+             crosshairs = TRUE,
+             headerFormat = '{point.연도} <br>',
+             pointFormat = '+ {point.시도별}: {point.y:, .0f} <br>') %>% 
+  hc_yAxis(title = list(text = "GRDP"), 
+           labels = list(format = "{value:,.0f}"),
+           opposite = FALSE) %>% 
+  hc_legend(enabled = TRUE)
+
+```
+
+
+# 업종별 GRDP 추세 {#grdp-sector-trend}
+
+```{r grdp-excel-by-sector}
+grdp_df %>% 
+  filter(! `경제활동별` %in% c("지역내총생산(시장가격)", "순생산물세", "총부가가치(기초가격)")) %>% 
+  filter(`시도별` == "전국") %>% 
+  hchart(hcaes(x=`연도`, y=GRDP, group=`경제활동별`), type="line") %>% 
+  hc_title(text = "연도별 GRDP 추세") %>%
+  hc_subtitle(text = "1985 ~ 2017년, 단위: 조원") %>% 
+  hc_tooltip(shared = TRUE,
+             crosshairs = TRUE,
+             headerFormat = '{point.연도} <br>',
+             pointFormat = '+ {point.경제활동별}: {point.y:, .0f} <br>') %>% 
+  hc_yAxis(title = list(text = "GRDP"), 
+           labels = list(format = "{value:,.0f}"),
+           opposite = FALSE) %>% 
+  hc_legend(enabled = TRUE)
+```
+
+
+# 시도별 업종별 추세 {.tabset .tabset-fade #sido-sector-trend}
+
+## Gyeonggi
+
+```{r grdp-sido-sector-trend-01}
+
+draw_grdp_trend <- function(sido) {
+  grdp_df %>% 
+  filter(! `경제활동별` %in% c("지역내총생산(시장가격)", "순생산물세", "총부가가치(기초가격)")) %>% 
+  filter(`시도별` == sido) %>% 
+  hchart(hcaes(x=`연도`, y=GRDP, group=`경제활동별`), type="line") %>% 
+  hc_title(text = "연도별 GRDP 추세") %>%
+  hc_subtitle(text = "1985 ~ 2017년, 단위: 조원") %>% 
+  hc_tooltip(shared = TRUE,
+             crosshairs = TRUE,
+             headerFormat = '{point.연도} <br>',
+             pointFormat = '+ {point.경제활동별}: {point.y:, .0f} <br>') %>% 
+  hc_yAxis(title = list(text = "GRDP"), 
+           labels = list(format = "{value:,.0f}"),
+           opposite = FALSE) %>% 
+  hc_legend(enabled = TRUE)
+}
+
+draw_grdp_trend("경기도")
+
+```
+
+## Seoul
+
+```{r grdp-sido-sector-trend-서울}
+
+draw_grdp_trend("서울특별시")
+
+```
+
+## Chungnam
+
+```{r grdp-sido-sector-trend-충청남도}
+draw_grdp_trend("충청남도")
+```
+
+
+## Gyeongnam
+
+```{r grdp-sido-sector-trend-경상남도}
+draw_grdp_trend("경상남도")
+```
+
+## Gyeongbuk
+
+```{r grdp-sido-sector-trend-경상북도}
+draw_grdp_trend("경상북도")
+```
+
+
+## Incheon 
+
+```{r grdp-sido-sector-trend-인천광역시}
+draw_grdp_trend("인천광역시")
+```
+
+## Busan  
+
+```{r grdp-sido-sector-trend-부산광역시}
+draw_grdp_trend("부산광역시")
+```
+
+## Ulsan   
+
+```{r grdp-sido-sector-trend-울산광역시}
+draw_grdp_trend("울산광역시")
+```
+
+## Jeollanam-do
+
+```{r grdp-sido-sector-trend-전라남도}
+draw_grdp_trend("전라남도")
+```
+
+## Jeollabuk-do
+
+```{r grdp-sido-sector-trend-전라북도}
+draw_grdp_trend("전라북도")
+```
+
+## Chungbuk
+
+```{r grdp-sido-sector-trend-충청북도}
+draw_grdp_trend("충청북도")
+```
+
+## Daegu 
+
+```{r grdp-sido-sector-trend-대구광역시}
+draw_grdp_trend("대구광역시")
+```
+
+
+## Gangwon
+
+```{r grdp-sido-sector-trend-강원도}
+draw_grdp_trend("강원도")
+```
+
+## Daejeon
+
+```{r grdp-sido-sector-trend-대전광역시}
+draw_grdp_trend("대전광역시")
+```
+
+## Gwangju 
+
+```{r grdp-sido-sector-trend-광주광역시}
+draw_grdp_trend("광주광역시")
+```
+
+## Jeju  
+
+```{r grdp-sido-sector-trend-제주특별자치도}
+draw_grdp_trend("제주특별자치도")
+```
+
+
+# 업종별 추세 {.tabset .tabset-fade #sido-sector-trend}
+
+## manufacturing 
+
+제조업(manufacturing)
+
+```{r grdp-sido-sector-by-제조업}
+
+draw_grdp_by_sector_trend <- function(sector) {
+  grdp_df %>% 
+  filter(! `경제활동별` %in% c("지역내총생산(시장가격)", "순생산물세", "총부가가치(기초가격)")) %>% 
+  filter(`경제활동별` == sector) %>% 
+  hchart(hcaes(x=`연도`, y=GRDP, group=`시도별`), type="line") %>% 
+  hc_title(text = "경제활동별 GRDP 추세") %>%
+  hc_subtitle(text = "1985 ~ 2017년, 단위: 조원") %>% 
+  hc_tooltip(shared = FALSE,
+             crosshairs = TRUE,
+             headerFormat = '{point.연도} <br>',
+             pointFormat = '+ {point.경제활동별}: {point.y:, .0f} <br>') %>% 
+  hc_yAxis(title = list(text = "GRDP"), 
+           labels = list(format = "{value:,.0f}"),
+           opposite = FALSE) %>% 
+  hc_legend(enabled = TRUE)
+}
+
+# grdp_df %>% 
+#   filter(`시도별` == "전국") %>% 
+#   group_by(`경제활동별`) %>% 
+#   summarise(grdp = sum(GRDP)) %>% 
+#   arrange(desc(grdp)) %>% 
+#   pull(`경제활동별`) %>% 
+#   dput()
+
+draw_grdp_by_sector_trend("제조업")
+
+```
+
+## Wholesale and retail trade 
+
+도매및소매업(Wholesale and retail trade)
+
+```{r grdp-sido-sector-by-도매및소매업}
+draw_grdp_by_sector_trend("도매및소매업")
+```
+
+## Real Estate & Rental
+
+부동산업및임대업(Real Estate Industry and Rental Industry)
+
+```{r grdp-sido-sector-by-부동산업및임대업}
+draw_grdp_by_sector_trend("부동산업및임대업")
+```
+
+## Public admin, national defense&social security
+
+공공행정,국방및사회보장행정(Public administration, national defense and social security administration)
+
+```{r grdp-sido-sector-by-공공행정국방및사회보장행정}
+draw_grdp_by_sector_trend("공공행정,국방및사회보장행정")
+```
+
+## Business service
+
+사업서비스업(Business service industry)
+
+```{r grdp-sido-sector-by-사업서비스업}
+draw_grdp_by_sector_trend("사업서비스업")
+```
+
+## Construction
+
+건설업(Business service industry)
+
+```{r grdp-sido-sector-by-건설업}
+draw_grdp_by_sector_trend("건설업")
+```
+
+## Financial and Insurance
+
+금융및보험업(Financial and Insurance Industry)
+
+```{r grdp-sido-sector-by-금융및보험업}
+draw_grdp_by_sector_trend("금융및보험업")
+```
+
+
+## Education service
+
+교육서비스업(education service industry)
+
+```{r grdp-sido-sector-by-교육서비스업}
+draw_grdp_by_sector_trend("교육서비스업")
+```
+
+
+## Transport business
+
+운수업(transport business)
+
+```{r grdp-sido-sector-by-운수업}
+draw_grdp_by_sector_trend("운수업")
+```
+
+## Publishing, Video, Broadcasting and Information Services
+
+출판,영상, 방송통신 및 정보서비스업(Publishing, Video, Broadcasting and Information Services)
+
+```{r grdp-sido-sector-by-출판영상}
+draw_grdp_by_sector_trend("출판,영상, 방송통신 및 정보서비스업")
+```
+
+
+## Health & social welfare services
+
+보건업및사회복지서비스업(Health and social welfare services)
+
+```{r grdp-sido-sector-by-보건업및사회복지서비스업}
+draw_grdp_by_sector_trend("보건업및사회복지서비스업")
+```
+
+## Agricultural industry
+
+농림어업(agricultural industry)
+
+```{r grdp-sido-sector-by-농림어업}
+draw_grdp_by_sector_trend("농림어업")
+```
+
+## Culture and other services
+
+문화 및 기타서비스업(Culture and other services)
+
+```{r grdp-sido-sector-by-문화기타서비스업}
+draw_grdp_by_sector_trend("문화 및 기타서비스업")
+```
+
+## Accommodation and restaurant business
+
+숙박및음식점업(Accommodation and restaurant business)
+
+```{r grdp-sido-sector-by-숙박및음식점업}
+draw_grdp_by_sector_trend("숙박및음식점업")
+```
+
+## Electricity, gas, and water supply
+
+전기,가스,증기및수도사업(Electricity, gas, steam and water supply businesses)
+
+```{r grdp-sido-sector-by-전기가스}
+draw_grdp_by_sector_trend("전기,가스,증기및수도사업")
+```
+
+## Mining industry
+
+광업(mining industry)
+
+```{r grdp-sido-sector-by-광업}
+draw_grdp_by_sector_trend("광업")
+```

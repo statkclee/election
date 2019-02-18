@@ -14,6 +14,6 @@ title: 대한민국 제21대 국회의원 선거
     - [정치지형 변화](election_politics.html)
     - [경제지형 변화](election_economics.html)
         - [지역내총생산(GRDP)](election_grdp.html)
-    - [인구 변화](election_population.html)
+    - [인구 변화](election_population_pyramid.html)
 - 미디어
     - [온라인 환경 변화](election_online.html)

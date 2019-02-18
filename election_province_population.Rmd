@@ -1,0 +1,152 @@
+---
+layout: page
+title: "제21대 국회의원 선거"
+subtitle: "시도별 피라미드"
+author:
+    name: xwMOOC
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: show
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+
+library(tidyverse)
+library(idbr) # devtools::install_github('walkerke/idbr')
+library(ggthemes)
+library(extrafont)
+loadfonts()
+```
+
+
+
+# 시도별 추계인구 {#population-pyramid-sido}
+
+[KOSIS 국가통계포털](http://kosis.kr/search/search.do) 웹사이트 검색창에 "시도 인구추계"를 입력하여 검색하게 되면 
+"장래인구추계:성 및 연령별 추계인구(1세별, 5세별)/시도 추천" 통계표를 데이터로 찾을 수 있다.
+
+## 데이터 전처리 {#population-pyramid-sido-preprocessing}
+
+통계청 KOSIS를 통해 다운로드 받은 데이터 중 의미있는 데이터만 추려 데이터를 정제한다.
+
+```{r sido-population-preprocessing}
+library(tidyverse)
+library(readxl)
+
+sido_pop_dat <- read_excel("data/101_DT_1BPB001_20190218172733.xlsx", sheet="데이터", skip=1)
+
+sido_pop_df <- sido_pop_dat %>% 
+  filter(`성별` == "계",
+         `연령별` != "계") %>% 
+  select(`시도별`, `연령별`, `2008 년`, `2012 년`, `2016 년`, `2020 년`) 
+
+sido_pop_df %>% 
+  DT::datatable() %>% 
+    DT::formatRound(3:6, digits = 0)
+```
+
+
+# 총선 시도별 인구추계  {#population-pyramid-sido}
+
+추계(推計)는 일부를 가지고 전체를 미루어 계산하는 기법으로 2020년 연령대별 인구구성은 기존 인구센서스를 통해 정리한 통계표에 기반하여 미루어 추정한 결과를 사용한다.
+
+## 2020년 시도별 인구  {#population-pyramid-sido-2020}
+
+```{r pop-sido-congressman}
+library(extrafont)
+loadfonts()
+sido_pop_df %>% 
+  gather(`연도`, `인구수`, -`시도별`, -`연령별`) %>% 
+  filter(`연령별` != "80세이상") %>% 
+  mutate(`연령별` = factor(`연령별`, levels=c("0 - 4세", "5 - 9세", "10 - 14세", "15 - 19세", "20 - 24세", 
+                                    "25 - 29세", "30 - 34세", "35 - 39세", "40 - 44세", "45 - 49세", 
+                                    "50 - 54세", "55 - 59세", "60 - 64세", "65 - 69세", 
+                                    "70 - 74세", "75 - 79세", "80 - 84세", "85 - 89세", 
+                                    "90 - 94세", "95 - 99세", "100세 이상"))) %>% 
+  mutate(`시도별` = factor(`시도별`, levels =c("전국", "경기도", "서울특별시", "경상남도", "부산광역시", "인천광역시", 
+         "경상북도", "대구광역시", "충청남도", "전라북도", "전라남도", "충청북도", "강원도", "대전광역시", "광주광역시",          "울산광역시", "제주특별자치도", "세종특별자치시"))) %>% 
+  filter(`연도` == "2020 년", `시도별` != "전국") %>% 
+  ggplot(aes(x=`연령별`, y=`인구수`, fill=`시도별`, width=0.7)) +
+    geom_col(position="dodge") +
+    facet_wrap(~`시도별`, scales="fixed") +
+    theme_bw(base_family = "NanumGothic") +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 90, hjust = 1)) +
+    scale_x_discrete(labels =c("0 - 4세", "", "10 - 14세", "", "20 - 24세",
+                               "", "30 - 34세", "", "40 - 44세", "", 
+                                    "50 - 54세", "", "60 - 64세", "", 
+                                    "70 - 74세", "", "80 - 84세", "", 
+                                    "90 - 94세", "", "100세 이상")) +
+   scale_y_continuous(labels = scales::comma) +
+   labs(x="", y="", title="시도별 연령대별 인구분포")
+```
+
+
+## 경기도 (2016년 vs 2020년)  {#population-pyramid-sido-2020-gg}
+
+경기도 인구를 2016년 대피 2020년을 비교하여 5살 단위로 인구구조변화를 살펴본다.
+
+```{r pop-sido-congressman-gg}
+
+sido_pop_df %>% 
+  gather(`연도`, `인구수`, -`시도별`, -`연령별`) %>% 
+  mutate(`연령별` = factor(`연령별`, levels=c("0 - 4세", "5 - 9세", "10 - 14세", "15 - 19세", "20 - 24세", 
+                                    "25 - 29세", "30 - 34세", "35 - 39세", "40 - 44세", "45 - 49세", 
+                                    "50 - 54세", "55 - 59세", "60 - 64세", "65 - 69세", 
+                                    "70 - 74세", "75 - 79세", "80 - 84세", "85 - 89세", 
+                                    "90 - 94세", "95 - 99세", "100세 이상"))) %>% 
+  mutate(`시도별` = factor(`시도별`, levels =c("전국", "경기도", "서울특별시", "경상남도", "부산광역시", "인천광역시", 
+         "경상북도", "대구광역시", "충청남도", "전라북도", "전라남도", "충청북도", "강원도", "대전광역시", "광주광역시",          "울산광역시", "제주특별자치도", "세종특별자치시"))) %>% 
+  filter(`연령별` != "80세이상",
+         `시도별` == "경기도") %>% 
+  filter(`연도` %in% c("2016 년", "2020 년")) %>% 
+  ggplot(aes(x=`연령별`, y=`인구수`, fill=`연도`, width=0.7)) +
+    geom_col(position="dodge") +
+    # facet_wrap(~`연도`, scales="fixed") +
+    theme_classic(base_family = "NanumGothic") +
+    theme(legend.position = "top",
+          axis.text.x = element_text(angle = 90, hjust = 1)) +
+   scale_y_continuous(labels = scales::comma) +
+   labs(x="", y="", title="경기도 연령대별 인구분포") +
+   scale_fill_manual(values = c("darkgray", "darkblue"))
+```
+
+
+## 경상북도 (2012년 vs 2020년)  {#population-pyramid-sido-2020-경북}
+
+경상북도 인구를 2012년 대피 2020년을 비교하여 5살 단위로 인구구조변화를 살펴본다.
+
+```{r pop-sido-congressman-경북}
+
+sido_pop_df %>% 
+  gather(`연도`, `인구수`, -`시도별`, -`연령별`) %>% 
+  mutate(`연령별` = factor(`연령별`, levels=c("0 - 4세", "5 - 9세", "10 - 14세", "15 - 19세", "20 - 24세", 
+                                    "25 - 29세", "30 - 34세", "35 - 39세", "40 - 44세", "45 - 49세", 
+                                    "50 - 54세", "55 - 59세", "60 - 64세", "65 - 69세", 
+                                    "70 - 74세", "75 - 79세", "80 - 84세", "85 - 89세", 
+                                    "90 - 94세", "95 - 99세", "100세 이상"))) %>% 
+  mutate(`시도별` = factor(`시도별`, levels =c("전국", "경기도", "서울특별시", "경상남도", "부산광역시", "인천광역시", 
+         "경상북도", "대구광역시", "충청남도", "전라북도", "전라남도", "충청북도", "강원도", "대전광역시", "광주광역시",          "울산광역시", "제주특별자치도", "세종특별자치시"))) %>% 
+  filter(`연령별` != "80세이상",
+         `시도별` == "경상북도") %>% 
+  filter(`연도` %in% c("2012 년", "2020 년")) %>% 
+  ggplot(aes(x=`연령별`, y=`인구수`, fill=`연도`, width=0.7)) +
+    geom_col(position="dodge") +
+    # facet_wrap(~`연도`, scales="fixed") +
+    theme_classic(base_family = "NanumGothic") +
+    theme(legend.position = "top",
+          axis.text.x = element_text(angle = 90, hjust = 1)) +
+   scale_y_continuous(labels = scales::comma) +
+   labs(x="", y="", title="경상북도 연령대별 인구분포") +
+   scale_fill_manual(values = c("darkgray", "darkblue"))
+```

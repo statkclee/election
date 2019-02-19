@@ -16,5 +16,5 @@ title: 대한민국 제21대 국회의원 선거
         - [지역내총생산(GRDP)](election_grdp.html)
     - [인구 변화](election_population_pyramid.html)
         - [시도별 인구 변화](election_province_population.html)
-- 미디어
+- [세대별 미디어](election_media.html)
     - [온라인 환경 변화](election_online.html)

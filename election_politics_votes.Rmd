@@ -10,7 +10,7 @@ output:
     toc: yes
     toc_float: true
     highlight: tango
-    code_folding: show
+    code_folding: hide
     number_section: true
     self_contained: true
 editor_options: 
@@ -18,7 +18,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE,
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
                       comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 
 
@@ -28,25 +28,32 @@ knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE,
 
 `krvotes` 팩키지에서 준비된 총선, 대선, 지선 데이터를 바탕으로 분당구 득표 데이터를 비교가능하도록 정당별로 준비시킨다.
 
-- 분당을의 경우 무소속 임태희 후보는 자한당으로 넣어 데이터를 준비한다.
-- 대선 유승민과 안철수는 합쳐서 바른미래당으로 준비한다.
+- 2016년 총선 분당을의 경우 무소속 임태희 후보는 자한당으로 넣어 데이터를 준비한다.
+    - 민주당: 더불어민주당 김병관 + 더불어민주당 김병욱
+    - 자한당: 새누리당 권혁세 + 새누리당 전하진 + 무소속 임태희
+    - 바른미래당: 국민의당 염오봉 + 국민의당 윤은숙
+- 2017년 대선 유승민과 안철수는 합쳐서 바른미래당으로 준비한다.
+    - 바른미래당: 안철수 + 유승민
+- 2018년 시도지사선거, 경기도지사 득표수로 갈음
+    - 이재명, 남경필, 김영환, 이홍우
+
 
 ```{r major-election-vote}
 library(tidyverse)
 library(krvotes)
 
 # 총선 2016 -----
-총선_df <- congress_2018 %>% 
+`총선_df` <- congress_2018 %>% 
   filter(str_detect(`precinct`, "분당")) %>% 
   unnest(data_clean) %>% 
   group_by(`읍면동명`) %>% 
   summarise(`민주당` = sum(`더불어민주당 김병관`, `더불어민주당 김병욱`, na.rm=TRUE),
-         `자한당` = sum(`새누리당 권혁세`, `새누리당 전하진`, `무소속 임태희`, na.rm=TRUE),
-         `바미당` = sum(`국민의당 염오봉`, `국민의당 윤은숙`, na.rm=TRUE)) %>% 
+            `자한당` = sum(`새누리당 권혁세`, `새누리당 전하진`, `무소속 임태희`, na.rm=TRUE),
+            `바미당` = sum(`국민의당 염오봉`, `국민의당 윤은숙`, na.rm=TRUE)) %>% 
   mutate(`선거` = "2016총선")
 
 # 대선 2017 -----
-대선_df <- president %>% 
+`대선_df` <- president %>% 
   tbl_df %>% 
   filter(str_detect(`구시군명`, "분당")) %>% 
   group_by(`읍면동명`) %>% 
@@ -58,9 +65,9 @@ library(krvotes)
 
 
 # 지선 2018 -----
-지선_df <- local_2018 %>% 
+`지선_df` <- local_2018 %>% 
   filter(str_detect(`시도명`, "경기")) %>% 
-  select(-시도명) %>% 
+  select(-`시도명`) %>% 
   unnest(data_clean) %>% 
   filter(str_detect(`구시군명`, "분당")) %>% 
   group_by(`읍면동명`) %>% 
@@ -70,40 +77,116 @@ library(krvotes)
             `정의당` = sum(`정의당 이홍우`)) %>% 
   mutate(`선거` = "2018지선")
 
-분당_df <- bind_rows(`총선_df`, `대선_df`) %>% 
+`분당_df` <- bind_rows(`총선_df`, `대선_df`) %>% 
   bind_rows(`지선_df`) %>% 
-  filter(!str_detect(읍면동명, "잘못")) %>% 
-  mutate(정의당 = ifelse(is.na(`정의당`), 0, `정의당`)) %>% 
-  select(선거, everything())
+  filter(!str_detect(`읍면동명`, "잘못")) %>% 
+  mutate(`정의당` = ifelse(is.na(`정의당`), 0, `정의당`)) %>% 
+  select(`선거`, everything())
 ```
 
 
-# 정당별 득표 테이블 {#major-election-table}
+## 분당구 정당별 득표 테이블 {#major-election-분당-table}
 
-```{r major-election-vote-table}
-분당_df %>% 
-  arrange(desc(`민주당`)) %>% 
+2016년 총선부터 2018년 지선까지 연도별 분당구 민주당, 자한당, 바른미래당, 정의당 정당별 득표율을 다음과 같은 표로 정리한다.
+
+```{r major-election-분당-vote-table, fig.width=12, fig.height=10}
+`분당_df` %>% 
+  gather(`정당`, `득표수`, -`선거`, -`읍면동명`) %>% 
+  mutate(`정당` = factor(`정당`, levels = c("민주당", "자한당", "바미당", "정의당"))) %>% 
+  group_by(`선거`, `정당`) %>% 
+  summarise(`득표수` = sum(`득표수`)) %>% 
+  spread(`정당`, `득표수`) %>% 
+  DT::datatable() %>% 
+    DT::formatRound(2:5, digits = 0)
+```
+
+
+앞서 정리한 표를 시각화하여 추세를 파악한다.
+
+```{r major-election-분당-vote-viz}
+library(extrafont)
+loadfonts()
+
+`분당득표` <- `분당_df` %>% 
+  gather(`정당`, `득표수`, -`선거`, -`읍면동명`) %>% 
+  mutate(`정당` = factor(`정당`, levels = c("민주당", "자한당", "바미당", "정의당"))) %>% 
+  group_by(`선거`, `정당`) %>% 
+  summarise(`득표수` = sum(`득표수`)) %>% 
+  filter(`선거` == "2018지선") %>% 
+  pull(`득표수`)
+
+`분당_df` %>% 
+  gather(`정당`, `득표수`, -`선거`, -`읍면동명`) %>% 
+  mutate(`정당` = factor(`정당`, levels = c("민주당", "자한당", "바미당", "정의당"))) %>% 
+  group_by(`선거`, `정당`) %>% 
+  summarise(`득표수` = sum(`득표수`)) %>% 
+  ggplot(aes(x=`선거`, y=`득표수`, group=`정당`, color=`정당`)) +
+    geom_line(size=1) +
+    geom_point(size=3) +
+    scale_color_manual(values = c("blue", "red", "cyan", "yellow")) +
+    scale_y_continuous(expand = c(0, 0), labels = scales::comma, sec.axis = sec_axis(~ ., breaks = `분당득표`), limits=c(0, 150000)) +
+    theme_minimal(base_family = "NanumGothic") +
+    labs(x="", y="득표수", title="성남시 분당구 주요선거 정당별 득표수",
+         subtitle="총선, 대선, 지선")
+```
+
+
+# 동별 {#major-election-dong}
+
+## 동별 득표 테이블 {#major-election-dong-table}
+
+```{r bundang-dong-table}
+library(highcharter)
+
+`분당_df` %>% 
+  gather(`정당`, `득표수`, -`선거`, -`읍면동명`) %>% 
+  mutate(`정당` = factor(`정당`, levels = c("민주당", "자한당", "바미당", "정의당"))) %>% 
+  group_by(`선거`, `정당`, `읍면동명`) %>% 
+  summarise(`득표수` = sum(`득표수`)) %>% 
+  spread(`정당`, `득표수`) %>% 
   DT::datatable() %>% 
     DT::formatRound(3:6, digits=0)
+
 ```
 
-# 정당별 득표 시각화 {#major-election-table}
 
-```{r major-election-vote-viz, fig.width=12, fig.height=10}
+## 동별 득표 시각화 - 정적비교 {#major-election-dong-static-viz}
+
+
+```{r bundang-dong-static-view, fig.width=12, fig.height=10}
 `분당_df` %>% 
-  filter(!str_detect(`읍면동명`, "재외투표|국외부재자투표|거소")) %>% 
   gather(`정당`, `득표수`, -`선거`, -`읍면동명`) %>% 
-  mutate(`정당` = factor(`정당`, levels =c("민주당", "자한당", "바미당", "정의당"))) %>% 
-  mutate(`선거` = factor(`선거`, levels =c("2018지선", "2017대선", "2016총선"))) %>% 
-    ggplot(aes(x=fct_reorder(`정당`, `득표수`), y=`득표수`, fill=`선거`)) +
-    geom_col(position = "dodge") +
-    coord_flip() +
-    facet_wrap(~`읍면동명`) +
-    scale_fill_manual(values=c("black", "gray90", "gray70" )) +
-    theme_minimal() +
+  filter(!str_detect(`읍면동명`, "거소|국외|재외")) %>% 
+  mutate(`정당` = factor(`정당`, levels = c("민주당", "자한당", "바미당", "정의당"))) %>% 
+  group_by(`선거`, `정당`, `읍면동명`) %>% 
+  summarise(`득표수` = sum(`득표수`)) %>% 
+  ggplot(aes(x=`선거`, y=`득표수`, group=`정당`, color=`정당`)) +
+    geom_line(size=1.3) +
+    geom_point(size=2.5) +
     scale_y_continuous(labels = scales::comma) +
-    labs(x="") +
-    theme(legend.position = "top")
+    facet_wrap(~ `읍면동명`) +
+    scale_color_manual(values = c("blue", "red", "cyan", "yellow")) +
+    theme_bw(base_family = "NanumGothic") +
+    theme(legend.position = "none") +
+    labs(x="", y="득표수")
 ```
 
 
+## 동별 득표 시각화 - 인터랙티브 {#major-election-dong-interactive}
+
+
+```{r bundang-dong-interactive-view}
+library(highcharter)
+
+```
+
+
+# 공간정보 {#major-election-map}
+
+## 동별 지리정보 {#major-election-dong-mapview}
+
+```{r bundang-dong-map-ggplot}
+# 2. 지리정보 시각화 -----
+
+
+```

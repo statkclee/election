@@ -28,25 +28,509 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 
 [성남시 통계 홈페이지](http://stat.seongnam.go.kr/)를 방문하면 "성남통계" &rarr; "월별 인구 및 세대 통계"  게시판을 통해 월별 성남시 인구 및 세대현황에 대한 상세 현황을 받을 수 있다. [성남시 월별 인구 및 세대 통계](http://stat.seongnam.go.kr/sn_stat/sub17.asp?id=wholesale_retail_census) 웹사이트에서 직접 게시판을 통해 다운로드 받는 것이 가능하다.
 
+- 2016년 3월: `2016년_3월_인구_및_세대현황.xlsx`
+- 2017년 3월: `2017.3월 인구현황.xlsx`
+- 2018년 3월: `민원여권과_2018.3. 인구현황.xlsx`
+- 2019년 2월: `민원여권과_2019년 2월 인구현황.xlsx`
 
-```{r sungnam-population-dataset}
+## 성남3구 인구통계 2016 {#sungnam-population-dataset-2016}
+
+```{r sungnam-population-dataset-2016}
 library(tidyverse)
 library(readxl)
+library(testthat)
 
-pop_sujung_201703 <- read_excel("data/2017.3월 인구현황.xlsx", sheet="연령별인구_수정", skip=6)
+## 2016년 수정구
+pop_sujung_201603 <- read_excel("data/2016년_3월_인구_및_세대현황.xlsx", sheet="연령별인구_수정", skip=5)
 
-pop_sujung_201703 <- pop_sujung_201703 %>% 
-  select(which(str_detect(colnames(pop_sujung_201703), "연    령|동|\\.\\.2\\b"))) %>% 
+pop_sujung_201603_df <- pop_sujung_201603 %>% 
+  select(which(str_detect(colnames(pop_sujung_201603), "연    령|동|\\.\\.2\\b"))) %>% 
   rename(`남녀` = "..2", 
          `연령` = "연    령") %>% 
-  
-  filter(str_detect(`남녀`, "남|영"))
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "수진구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
 
+## 2016년 중원구
+pop_joongwon_201603 <- read_excel("data/2016년_3월_인구_및_세대현황.xlsx", sheet="연령별인구_중원", skip=5)
 
+pop_joongwon_201603_df <- pop_joongwon_201603 %>% 
+  select(which(str_detect(colnames(pop_joongwon_201603), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "중원구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
 
+## 2016년 분당구
+pop_bundang_201603 <- read_excel("data/2016년_3월_인구_및_세대현황.xlsx", sheet="연령별인구_분당", skip=5)
+
+pop_bundang_201603_df <- pop_bundang_201603 %>% 
+  select(which(str_detect(colnames(pop_bundang_201603), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "분당구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
+
+## 2016년 인구통계 (3구)
+
+sungnam_2016_df <- bind_rows(pop_sujung_201603_df, pop_joongwon_201603_df) %>% 
+  bind_rows(pop_bundang_201603_df)
+
+sungnam_2016_df %>% write_rds("data/sungnam_2016_df.rds")
+
+## 2016년 인구통계 데이터 정합성 검정
+context('성남시 2016년 인구수')
+test_that("성남시 3구 인구수", {
+  expect_equal(pop_sujung_201603_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 223366)
+  expect_equal(pop_joongwon_201603_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 250351)
+  expect_equal(pop_bundang_201603_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 503074)
+})
 
 ```
 
 
+## 성남3구 인구통계 2017 {#sungnam-population-dataset-2017}
+
+```{r sungnam-population-dataset-2017}
+## 2017년 수정구
+pop_sujung_201703 <- read_excel("data/2017.3월 인구현황.xlsx", sheet="연령별인구_수정", skip=6)
+
+pop_sujung_201703_df <- pop_sujung_201703 %>% 
+  select(which(str_detect(colnames(pop_sujung_201703), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "수진구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
+
+## 2017년 중원구
+pop_joongwon_201703 <- read_excel("data/2017.3월 인구현황.xlsx", sheet="연령별인구_중원", skip=5)
+
+pop_joongwon_201703_df <- pop_joongwon_201703 %>% 
+  select(which(str_detect(colnames(pop_joongwon_201703), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "중원구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
+
+## 2017년 분당구
+pop_bundang_201703 <- read_excel("data/2017.3월 인구현황.xlsx", sheet="연령별인구_분당", skip=5)
+
+pop_bundang_201703_df <- pop_bundang_201703 %>% 
+  select(which(str_detect(colnames(pop_bundang_201703), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "분당구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
+
+## 2017년 인구통계 (3구)
+
+sungnam_2017_df <- bind_rows(pop_sujung_201703_df, pop_joongwon_201703_df) %>% 
+  bind_rows(pop_bundang_201703_df)
+
+sungnam_2017_df %>% write_rds("data/sungnam_2017_df.rds")
+
+## 2017년 인구통계 데이터 정합성 검정
+
+context('성남시 2017년 인구수')
+test_that("성남시 3구 인구수", {
+  expect_equal(pop_sujung_201703_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 235638)
+  expect_equal(pop_joongwon_201703_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 235400)
+  expect_equal(pop_bundang_201703_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 503305)
+})
+
+```
+
+## 성남3구 인구통계 2018 {#sungnam-population-dataset-2018}
+
+```{r sungnam-population-dataset-2018}
+## 2018년 수정구
+pop_sujung_201803 <- read_excel("data/민원여권과_2018.3. 인구현황.xlsx", sheet="연령별인구_수정", skip=5)
+
+pop_sujung_201803_df <- pop_sujung_201803 %>% 
+  select(which(str_detect(colnames(pop_sujung_201803), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "수진구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
+
+## 2018년 중원구
+pop_joongwon_201803 <- read_excel("data/민원여권과_2018.3. 인구현황.xlsx", sheet="연령별인구_중원", skip=5)
+
+pop_joongwon_201803_df <- pop_joongwon_201803 %>% 
+  select(which(str_detect(colnames(pop_joongwon_201803), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "중원구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
+
+## 2018년 분당구
+pop_bundang_201803 <- read_excel("data/민원여권과_2018.3. 인구현황.xlsx", sheet="연령별인구_분당", skip=5)
+
+pop_bundang_201803_df <- pop_bundang_201803 %>% 
+  select(which(str_detect(colnames(pop_bundang_201803), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "분당구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
+
+## 2018년 인구통계 (3구)
+
+sungnam_2018_df <- bind_rows(pop_sujung_201803_df, pop_joongwon_201803_df) %>% 
+  bind_rows(pop_bundang_201803_df)
+
+sungnam_2018_df %>% write_rds("data/sungnam_2018_df.rds")
+
+## 2018년 인구통계 데이터 정합성 검정
+
+context('성남시 2018년 인구수')
+test_that("성남시 3구 인구수", {
+  expect_equal(pop_sujung_201803_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 237101)
+  expect_equal(pop_joongwon_201803_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 229408)
+  expect_equal(pop_bundang_201803_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 499182)
+})
+
+```
+
+## 성남3구 인구통계 2019 {#sungnam-population-dataset-2019}
+
+```{r sungnam-population-dataset-2019}
+## 2018년 수정구
+pop_sujung_201902 <- read_excel("data/민원여권과_2019년 2월 인구현황.xlsx", sheet="연령별 인구_수정", skip=5)
+
+pop_sujung_201902_df <- pop_sujung_201902 %>% 
+  select(which(str_detect(colnames(pop_sujung_201902), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "수진구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
+
+## 2019년 중원구
+pop_joongwon_201902 <- read_excel("data/민원여권과_2019년 2월 인구현황.xlsx", sheet="연령별 인구_중원", skip=5)
+
+pop_joongwon_201902_df <- pop_joongwon_201902 %>% 
+  select(which(str_detect(colnames(pop_joongwon_201902), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "중원구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
+
+## 2019년 분당구
+pop_bundang_201902 <- read_excel("data/민원여권과_2019년 2월 인구현황.xlsx", sheet="연령별 인구_분당", skip=5)
+
+pop_bundang_201902_df <- pop_bundang_201902 %>% 
+  select(which(str_detect(colnames(pop_bundang_201902), "연    령|동|\\.\\.2\\b"))) %>% 
+  rename(`남녀` = "..2", 
+         `연령` = "연    령") %>% 
+  filter(str_detect(`남녀`, "계"),
+         !str_detect(`연령`, "합")) %>% 
+  select(-`남녀`) %>% 
+  mutate(`연령` = str_extract(`연령`, "^[0-9]+")) %>% 
+  gather(`행정동`, `인구수`, -`연령`) %>% 
+  mutate(`구명` = "분당구") %>% 
+  mutate(`인구수` = as.integer(`인구수`))
+
+## 2018년 인구통계 (3구)
+
+sungnam_2019_df <- bind_rows(pop_sujung_201902_df, pop_joongwon_201902_df) %>% 
+  bind_rows(pop_bundang_201902_df)
+
+sungnam_2019_df %>% write_rds("data/sungnam_2019_df.rds")
+
+## 2018년 인구통계 데이터 정합성 검정
+
+context('성남시 2018년 인구수')
+test_that("성남시 3구 인구수", {
+  expect_equal(pop_sujung_201902_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 233620)
+  expect_equal(pop_joongwon_201902_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 224373)
+  expect_equal(pop_bundang_201902_df %>% summarise(`합계` = sum(`인구수`)) %>% pull(`합계`), 494371)
+})
+```
+
+# 성남시 인구통계 {#sungnam-population-EDA}
+
+## 성남 3구 인구변화 {#sungnam-population-EDA-gu}
+
+```{r sungnam-population-EDA-gu}
+library(lubridate)
+library(extrafont)
+loadfonts()
+
+## 데이터 3구 연도별 종합
+sungnam_2016_df <- read_rds("data/sungnam_2016_df.rds") %>% mutate(`연도` = ymd("2016-03-31") %>% year(.))
+sungnam_2017_df <- read_rds("data/sungnam_2017_df.rds") %>% mutate(`연도` = ymd("2017-03-31") %>% year(.))
+sungnam_2018_df <- read_rds("data/sungnam_2018_df.rds") %>% mutate(`연도` = ymd("2018-03-31") %>% year(.))
+sungnam_2019_df <- read_rds("data/sungnam_2019_df.rds") %>% mutate(`연도` = ymd("2019-02-28") %>% year(.))
+
+sungnam_df <- bind_rows(sungnam_2016_df, sungnam_2017_df) %>% 
+  bind_rows(sungnam_2018_df) %>% 
+  bind_rows(sungnam_2019_df) %>% 
+  mutate(`연령` = as.integer(`연령`))
+
+## 데이터 3구 연도별 종합 시각화
+sungnam_df %>% 
+  group_by(`연도`, `구명`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  ggplot(aes(x=`연도`, y=`인구수`, color=`구명`)) +
+    geom_line() +
+    geom_point() +
+    scale_y_continuous(labels=scales::comma, limits=c(0, 510000)) +
+    theme_bw(base_family = "NanumGothic") +
+    labs(x="", y="", title="성남시 3구 연도별 인구수 변화",
+         subtitle="2016/2017/2018년 3월, 2019년 2월",
+         caption="출처: 성남 통계 홈페이지, http://stat.seongnam.go.kr/")
+```
 
 
+```{r sungnam-population-EDA-gu-table}
+sungnam_df %>% 
+  group_by(`연도`, `구명`) %>% 
+  summarise(`인구수` = sum(`인구수`))  %>% 
+  spread(`구명`, `인구수`) %>% 
+  DT::datatable() %>% 
+    DT::formatRound(2:4, digits=0)
+```
+
+## 성남 3구 동별 인구변화 {#sungnam-population-EDA-dong}
+
+### 성남 분당구 동별 인구변화 {#sungnam-population-EDA-dong-bundang}
+
+```{r sungnam-population-EDA-dong-bundang}
+library(plotly)
+
+## 동별 연도별 종합 시각화
+bundang_g <- sungnam_df %>% 
+  filter(`구명` == "분당구") %>% 
+  group_by(`연도`, `행정동`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  ggplot(aes(x=`연도`, y=`인구수`, color=`행정동`, group=`행정동`,
+             text = paste('행정동 :', `행정동`, "\n",
+                          '연도:', `연도`, "\n",
+                          '인구수: ', scales::comma(`인구수`)))) +
+    geom_line() +
+    geom_point() +
+    scale_y_continuous(labels=scales::comma) +
+    theme_bw(base_family = "NanumGothic") +
+    labs(x="", y="", title="성남시 3구 연도별 인구수 변화",
+         subtitle="2016/2017/2018년 3월, 2019년 2월",
+         caption="출처: 성남 통계 홈페이지, http://stat.seongnam.go.kr/") +
+    theme(legend.position = "none")
+
+ggplotly(bundang_g, tooltip="text")
+```
+
+
+```{r sungnam-population-EDA-dong-bundang-facet, fig.width=12, fig.height=10}
+## 동별 연도별 종합 시각화
+sungnam_df %>% 
+  filter(`구명` == "분당구") %>% 
+  group_by(`연도`, `행정동`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  ggplot(aes(x=`연도`, y=`인구수`, color=`행정동`)) +
+    geom_line() +
+    geom_point() +
+    scale_y_continuous(labels=scales::comma) +
+    theme_bw(base_family = "NanumGothic") +
+    labs(x="", y="", title="성남시 3구 연도별 인구수 변화",
+         subtitle="2016/2017/2018년 3월, 2019년 2월",
+         caption="출처: 성남 통계 홈페이지, http://stat.seongnam.go.kr/") +
+    facet_wrap(~`행정동`, scales="free") +
+    theme(legend.position = "none")
+```
+
+증감 = 2019년 인구수 - 2016년 인구수
+
+```{r sungnam-population-EDA-dong-table}
+## 동별 연도별 종합 시각화
+sungnam_df %>% 
+  filter(`구명` == "분당구") %>% 
+  group_by(`연도`, `행정동`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  spread(`연도`, `인구수`) %>% 
+  mutate(`증감` = `2019` - `2016`) %>% 
+  DT::datatable() %>% 
+    DT::formatRound(2:6, digits=0)
+```
+
+
+# 성남시 연령별 인구구조 변화 {#sungnam-population-EDA-change}
+
+## 성남 3구 연령별 {#sungnam-population-EDA-gu-change}
+
+```{r sungnam-population-EDA-gu-change}
+## 데이터 3구 연도별 종합 시각화
+sungnam_age_df <- sungnam_df %>% 
+  mutate(`연령대` = case_when(`연령` >=0 & `연령` <=5 ~   "0-5세",
+                              `연령` >=6 &  `연령` <=10 ~ "6-10세",
+                              `연령` >=11 & `연령` <=15 ~ "11-15세",
+                              `연령` >=16 & `연령` <=20 ~ "16-20세",
+                              `연령` >=21 & `연령` <=25 ~ "21-25세",
+                              `연령` >=26 & `연령` <=30 ~ "26-30세",
+                              `연령` >=31 & `연령` <=35 ~ "31-35세",
+                              `연령` >=36 & `연령` <=40 ~ "36-40세",
+                              `연령` >=41 & `연령` <=45 ~ "41-45세",
+                              `연령` >=46 & `연령` <=50 ~ "46-50세",
+                              `연령` >=51 & `연령` <=55 ~ "51-55세",
+                              `연령` >=56 & `연령` <=60 ~ "56-60세",
+                              `연령` >=61 & `연령` <=65 ~ "61-65세",
+                              `연령` >=66 & `연령` <=70 ~ "66-70세",
+                              `연령` >=71 & `연령` <=75 ~ "71-75세",
+                              `연령` >=76 & `연령` <=80 ~ "76-80세",
+                              `연령` >=81  ~ "80세+")) %>% 
+  mutate(`연령대` = factor(`연령대`,levels=c("0-5세","6-10세","11-15세","16-20세","21-25세","26-30세","31-35세","36-40세","41-45세","46-50세","51-55세","56-60세","61-65세","66-70세","71-75세","76-80세","80세+")))  %>% 
+    mutate(`선거구` = case_when(`행정동` %in%  c("구미1동", "구미동", "금곡동", "분당동", "수내1동", "수내2동", "수내3동","정자1동", 
+"정자2동", "정자3동", "정자동") ~ "분당을",
+                             TRUE ~ "분당갑"))
+
+sungnam_age_df %>% 
+  group_by(`연도`, `연령대`, `구명`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  ungroup() %>% 
+  mutate(`연도` = factor(`연도`)) %>% 
+  ggplot(aes(x=`연령대`, y=`인구수`, fill=`연도`)) +
+    geom_col(position = "dodge") +
+    scale_y_continuous(labels=scales::comma) +
+    scale_fill_manual(values = c("blue", "gray60", "gray50", "red")) +
+    theme_bw(base_family = "NanumGothic") +
+    labs(x="", y="", fill="연도", title="성남시 3구 연도별 연령대별 인구수 변화",
+         subtitle="2016/2017/2018년 3월, 2019년 2월",
+         caption="출처: 성남 통계 홈페이지, http://stat.seongnam.go.kr/") +
+    facet_wrap(~`구명`) +
+    theme(legend.position = "top",
+          axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+## 분당구만 연령별 별화 {#sungnam-population-EDA-gu-change-bundang}
+
+```{r sungnam-population-EDA-gu-change-bundang}
+sungnam_age_df %>% 
+  filter(`구명` == "분당구") %>% 
+  group_by(`연도`, `연령대`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  ungroup() %>% 
+  mutate(`연도` = factor(`연도`)) %>% 
+  ggplot(aes(x=`연령대`, y=`인구수`, fill=`연도`)) +
+    geom_col(position = "dodge") +
+    scale_y_continuous(labels=scales::comma) +
+    scale_fill_manual(values = c("blue", "gray60", "gray50", "red")) +
+    theme_bw(base_family = "NanumGothic") +
+    labs(x="", y="", fill="연도", title="분당구 연도별 연령대별 인구수 변화",
+         subtitle="2016/2017/2018년 3월, 2019년 2월",
+         caption="출처: 성남 통계 홈페이지, http://stat.seongnam.go.kr/") +
+    theme(legend.position = "top",
+          axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+## 선거구별 연령별 별화 {#sungnam-population-dong-change-bundang}
+
+- 분당을: "구미1동", "구미동", "금곡동", "분당동", "수내1동", "수내2동", "수내3동","정자1동", "정자2동", "정자3동", "정자동"
+- 분당갑: "백현동", "삼평동", "서현1동", "서현2동", "야탑1동", 
+"야탑2동", "야탑3동", "운중동", "이매1동", "이매2동", "판교동"
+
+```{r sungnam-population-dong-change-bundang}
+sungnam_age_df %>% 
+  filter(`구명` == "분당구") %>% 
+  group_by(`연도`, `연령대`, `선거구`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  ungroup() %>% 
+  mutate(`연도` = factor(`연도`)) %>% 
+  ggplot(aes(x=`연령대`, y=`인구수`, fill=`연도`)) +
+    geom_col(position = "dodge") +
+    scale_y_continuous(labels=scales::comma) +
+    scale_fill_manual(values = c("blue", "gray60", "gray50", "red")) +
+    theme_bw(base_family = "NanumGothic") +
+    labs(x="", y="", fill="연도", title="분당갑을 연도별 연령대별 인구수 변화",
+         subtitle="2016/2017/2018년 3월, 2019년 2월",
+         caption="출처: 성남 통계 홈페이지, http://stat.seongnam.go.kr/") +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 90, hjust = 1)) +
+    facet_wrap(~`선거구`)
+```
+
+
+## 분당을 동별 연령별 별화 {#sungnam-population-dong-change-bundang-eul}
+
+```{r sungnam-population-dong-change-bundang-eul}
+sungnam_age_df %>% 
+  filter(`선거구` == "분당을") %>% 
+  group_by(`연도`, `연령대`, `행정동`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  ungroup() %>% 
+  mutate(`연도` = factor(`연도`)) %>% 
+  ggplot(aes(x=`연령대`, y=`인구수`, fill=`연도`)) +
+    geom_col(position = "dodge") +
+    scale_y_continuous(labels=scales::comma) +
+    scale_fill_manual(values = c("blue", "gray60", "gray50", "red")) +
+    theme_bw(base_family = "NanumGothic") +
+    labs(x="", y="", fill="연도", title="분당구 연도별 연령대별 인구수 변화",
+         subtitle="2016/2017/2018년 3월, 2019년 2월",
+         caption="출처: 성남 통계 홈페이지, http://stat.seongnam.go.kr/") +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 90, hjust = 1)) +
+    facet_wrap(~`행정동`)
+```
+
+
+```{r sungnam-population-dong-change-bundang-eul-table}
+sungnam_age_df %>% 
+  filter(`선거구` == "분당을") %>% 
+  group_by(`연도`, `연령대`, `행정동`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  spread(`연도`, `인구수`) %>% 
+  DT::datatable() %>% 
+    DT::formatRound(3:6, digits=0)
+
+```

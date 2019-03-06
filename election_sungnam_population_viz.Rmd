@@ -22,7 +22,10 @@ mainfont: NanumGothic
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
                       comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 
-
+library(tidyverse)
+library(lubridate)
+library(extrafont)
+loadfonts()
 ```
 
 # 성남시 인구통계 {#sungnam-population-EDA-new}
@@ -36,7 +39,7 @@ library(extrafont)
 loadfonts()
 
 ## 맥 인코딩 ----- 
-Sys.setlocale('LC_CTYPE', 'ko_KR.UTF-8')
+# Sys.setlocale('LC_CTYPE', 'ko_KR.UTF-8')
 options(encoding = "utf8")
 
 ## 데이터 3구 연도별 종합 -----
@@ -97,20 +100,20 @@ library(rbokeh)
 
 # 연도별, 행정동 중첩시킴.
 by_year_dong <- bundang_eul_df %>%
-  group_by(`행정동`) %>%
+  dplyr::mutate(연도 = factor(연도)) %>%
+  group_by(`연도`, `행정동`) %>%
   nest()
 
 # 시각화
 by_year_dong_bokeh <- by_year_dong %>% mutate(
   panel = map_plot(data,
-    ~ figure() %>% 
-      ly_bar(`연령대`, `인구수`, color=`연도`,  position = "dodge", data = .x, hover = TRUE) %>% 
+    ~ figure(xlab="", ylab="") %>% 
+      ly_bar(`연령대`, `인구수`,  position = "dodge", data = .x, hover = TRUE) %>% 
       theme_axis("x", major_label_orientation = 90)
-    
-      # theme_axis("x", major_label_orientation = 90) %>% 
+      # theme_axis("x", major_label_orientation = 90) %>%  
       # set_palette(discrete_color = pal_color(c("blue", "gray60", "gray50", "red")))
   )) 
   
 by_year_dong_bokeh %>%  
-  trelliscope(name="bundang", nrow = 2, ncol = 2, path = "bundang_files")
+  trelliscope(name="bundang_viz", nrow = 1, ncol = 2, path = "bundang_viz_files")
 ```

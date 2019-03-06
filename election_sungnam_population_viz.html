@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+<meta name="date" content="2019-03-06" />
+
+<title>제21대 국회의원 선거</title>
+
+<script src="election_sungnam_population_viz_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="election_sungnam_population_viz_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="election_sungnam_population_viz_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="election_sungnam_population_viz_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="election_sungnam_population_viz_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="election_sungnam_population_viz_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="election_sungnam_population_viz_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="election_sungnam_population_viz_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="election_sungnam_population_viz_files/navigation-1.1/tabsets.js"></script>
+<script src="election_sungnam_population_viz_files/navigation-1.1/codefolding.js"></script>
+<script src="election_sungnam_population_viz_files/htmlwidgets-1.3/htmlwidgets.js"></script>
+<script src="election_sungnam_population_viz_files/trelliscopejs_widget-0.1.20/trelliscope.min.js"></script>
+<script src="election_sungnam_population_viz_files/trelliscopejs_widget-binding-0.1.18/trelliscopejs_widget.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">제21대 국회의원 선거</h1>
+<h3 class="subtitle"><em>성남시 인구변화 - 인터랙티브 작은 창</em></h3>
+<h4 class="author"><em>xwMOOC</em></h4>
+<h4 class="date"><em>2019-03-06</em></h4>
+
+</div>
+
+
+<div id="sungnam-population-EDA-new" class="section level1">
+<h1><span class="header-section-number">1</span> 성남시 인구통계</h1>
+<div id="sungnam-population-EDA-gu-new" class="section level2">
+<h2><span class="header-section-number">1.1</span> 성남 3구 인구변화 데이터</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(lubridate)
+<span class="kw">library</span>(extrafont)
+<span class="kw">loadfonts</span>()
+
+## 맥 인코딩 ----- 
+<span class="co"># Sys.setlocale(&#39;LC_CTYPE&#39;, &#39;ko_KR.UTF-8&#39;)</span>
+<span class="kw">options</span>(<span class="dt">encoding =</span> <span class="st">&quot;utf8&quot;</span>)
+
+## 데이터 3구 연도별 종합 -----
+sungnam_2016_df &lt;-<span class="st"> </span><span class="kw">read_rds</span>(<span class="st">&quot;data/sungnam_2016_df.rds&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">연도</span><span class="st">`</span> =<span class="st"> </span><span class="kw">ymd</span>(<span class="st">&quot;2016-03-31&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">year</span>(.))
+sungnam_2017_df &lt;-<span class="st"> </span><span class="kw">read_rds</span>(<span class="st">&quot;data/sungnam_2017_df.rds&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">연도</span><span class="st">`</span> =<span class="st"> </span><span class="kw">ymd</span>(<span class="st">&quot;2017-03-31&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">year</span>(.))
+sungnam_2018_df &lt;-<span class="st"> </span><span class="kw">read_rds</span>(<span class="st">&quot;data/sungnam_2018_df.rds&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">연도</span><span class="st">`</span> =<span class="st"> </span><span class="kw">ymd</span>(<span class="st">&quot;2018-03-31&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">year</span>(.))
+sungnam_2019_df &lt;-<span class="st"> </span><span class="kw">read_rds</span>(<span class="st">&quot;data/sungnam_2019_df.rds&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">연도</span><span class="st">`</span> =<span class="st"> </span><span class="kw">ymd</span>(<span class="st">&quot;2019-02-28&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">year</span>(.))
+
+sungnam_df &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(sungnam_2016_df, sungnam_2017_df) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">bind_rows</span>(sungnam_2018_df) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">bind_rows</span>(sungnam_2019_df) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">연령</span><span class="st">`</span> =<span class="st"> </span><span class="kw">as.integer</span>(<span class="st">`</span><span class="dt">연령</span><span class="st">`</span>))
+
+## 성남 3구 연령대 데이터프레임 -----
+sungnam_age_df &lt;-<span class="st"> </span>sungnam_df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">연령대</span><span class="st">`</span> =<span class="st"> </span><span class="kw">case_when</span>(<span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">0</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">5</span> <span class="op">~</span><span class="st">   &quot;0-5세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">6</span> <span class="op">&amp;</span><span class="st">  `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">10</span> <span class="op">~</span><span class="st"> &quot;6-10세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">11</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">15</span> <span class="op">~</span><span class="st"> &quot;11-15세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">16</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">20</span> <span class="op">~</span><span class="st"> &quot;16-20세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">21</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">25</span> <span class="op">~</span><span class="st"> &quot;21-25세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">26</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">30</span> <span class="op">~</span><span class="st"> &quot;26-30세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">31</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">35</span> <span class="op">~</span><span class="st"> &quot;31-35세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">36</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">40</span> <span class="op">~</span><span class="st"> &quot;36-40세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">41</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">45</span> <span class="op">~</span><span class="st"> &quot;41-45세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">46</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">50</span> <span class="op">~</span><span class="st"> &quot;46-50세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">51</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">55</span> <span class="op">~</span><span class="st"> &quot;51-55세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">56</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">60</span> <span class="op">~</span><span class="st"> &quot;56-60세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">61</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">65</span> <span class="op">~</span><span class="st"> &quot;61-65세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">66</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">70</span> <span class="op">~</span><span class="st"> &quot;66-70세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">71</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">75</span> <span class="op">~</span><span class="st"> &quot;71-75세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">76</span> <span class="op">&amp;</span><span class="st"> `</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&lt;=</span><span class="dv">80</span> <span class="op">~</span><span class="st"> &quot;76-80세&quot;</span>,
+                              <span class="st">`</span><span class="dt">연령</span><span class="st">`</span> <span class="op">&gt;=</span><span class="dv">81</span>  <span class="op">~</span><span class="st"> &quot;80세+&quot;</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">연령대</span><span class="st">`</span> =<span class="st"> </span><span class="kw">factor</span>(<span class="st">`</span><span class="dt">연령대</span><span class="st">`</span>,<span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&quot;0-5세&quot;</span>,<span class="st">&quot;6-10세&quot;</span>,<span class="st">&quot;11-15세&quot;</span>,<span class="st">&quot;16-20세&quot;</span>,<span class="st">&quot;21-25세&quot;</span>,<span class="st">&quot;26-30세&quot;</span>,<span class="st">&quot;31-35세&quot;</span>,<span class="st">&quot;36-40세&quot;</span>,<span class="st">&quot;41-45세&quot;</span>,<span class="st">&quot;46-50세&quot;</span>,<span class="st">&quot;51-55세&quot;</span>,<span class="st">&quot;56-60세&quot;</span>,<span class="st">&quot;61-65세&quot;</span>,<span class="st">&quot;66-70세&quot;</span>,<span class="st">&quot;71-75세&quot;</span>,<span class="st">&quot;76-80세&quot;</span>,<span class="st">&quot;80세+&quot;</span>)))  <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">선거구</span><span class="st">`</span> =<span class="st"> </span><span class="kw">case_when</span>(<span class="st">`</span><span class="dt">행정동</span><span class="st">`</span> <span class="op">%in%</span><span class="st">  </span><span class="kw">c</span>(<span class="st">&quot;구미1동&quot;</span>, <span class="st">&quot;구미동&quot;</span>, <span class="st">&quot;금곡동&quot;</span>, <span class="st">&quot;분당동&quot;</span>, <span class="st">&quot;수내1동&quot;</span>, <span class="st">&quot;수내2동&quot;</span>, <span class="st">&quot;수내3동&quot;</span>,<span class="st">&quot;정자1동&quot;</span>, 
+<span class="st">&quot;정자2동&quot;</span>, <span class="st">&quot;정자3동&quot;</span>, <span class="st">&quot;정자동&quot;</span>) <span class="op">~</span><span class="st"> &quot;분당을&quot;</span>,
+                             <span class="ot">TRUE</span> <span class="op">~</span><span class="st"> &quot;분당갑&quot;</span>))
+
+
+## 분당을 연령대 데이터 -----
+
+bundang_eul_df &lt;-<span class="st"> </span>sungnam_age_df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">선거구</span><span class="st">`</span> <span class="op">==</span><span class="st"> &quot;분당을&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(<span class="st">`</span><span class="dt">연도</span><span class="st">`</span>, <span class="st">`</span><span class="dt">연령대</span><span class="st">`</span>, <span class="st">`</span><span class="dt">행정동</span><span class="st">`</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="st">`</span><span class="dt">인구수</span><span class="st">`</span> =<span class="st"> </span><span class="kw">sum</span>(<span class="st">`</span><span class="dt">인구수</span><span class="st">`</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">연도</span><span class="st">`</span> =<span class="st"> </span><span class="kw">factor</span>(<span class="st">`</span><span class="dt">연도</span><span class="st">`</span>))
+
+bundang_eul_df <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">write_csv</span>(<span class="st">&quot;data/bundang_eul_df.csv&quot;</span>)</code></pre></div>
+</div>
+</div>
+<div id="sungnam-trelliscope" class="section level1">
+<h1><span class="header-section-number">2</span> 분당을 인터랙티브 시각화</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bundang_eul_df &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/bundang_eul_df.csv&quot;</span>)
+<span class="kw">library</span>(trelliscopejs)
+<span class="kw">library</span>(rbokeh)
+
+<span class="co"># 연도별, 행정동 중첩시킴.</span>
+by_year_dong &lt;-<span class="st"> </span>bundang_eul_df <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(연도 =<span class="st"> </span><span class="kw">factor</span>(연도)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(<span class="st">`</span><span class="dt">연도</span><span class="st">`</span>, <span class="st">`</span><span class="dt">행정동</span><span class="st">`</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">nest</span>()
+
+<span class="co"># 시각화</span>
+by_year_dong_bokeh &lt;-<span class="st"> </span>by_year_dong <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(
+  <span class="dt">panel =</span> <span class="kw">map_plot</span>(data,
+    <span class="op">~</span><span class="st"> </span><span class="kw">figure</span>(<span class="dt">xlab=</span><span class="st">&quot;&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">      </span><span class="kw">ly_bar</span>(<span class="st">`</span><span class="dt">연령대</span><span class="st">`</span>, <span class="st">`</span><span class="dt">인구수</span><span class="st">`</span>,  <span class="dt">position =</span> <span class="st">&quot;dodge&quot;</span>, <span class="dt">data =</span> .x, <span class="dt">hover =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">      </span><span class="kw">theme_axis</span>(<span class="st">&quot;x&quot;</span>, <span class="dt">major_label_orientation =</span> <span class="dv">90</span>)
+      <span class="co"># theme_axis(&quot;x&quot;, major_label_orientation = 90) %&gt;%  </span>
+      <span class="co"># set_palette(discrete_color = pal_color(c(&quot;blue&quot;, &quot;gray60&quot;, &quot;gray50&quot;, &quot;red&quot;)))</span>
+  )) 
+  
+by_year_dong_bokeh <span class="op">%&gt;%</span><span class="st">  </span>
+<span class="st">  </span><span class="kw">trelliscope</span>(<span class="dt">name=</span><span class="st">&quot;bundang_viz&quot;</span>, <span class="dt">nrow =</span> <span class="dv">1</span>, <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">path =</span> <span class="st">&quot;bundang_viz_files&quot;</span>)</code></pre></div>
+<div id="htmlwidget-3daa6c6f31d30dc326fb" style="width:900px;height:550px;" class="trelliscopejs_widget html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3daa6c6f31d30dc326fb">{"x":{"id":"7f07d0db","config_info":"'bundang_viz_files/appfiles/config.jsonp'","self_contained":false,"latest_display":{"name":"bundang_viz","group":"common"},"spa":false,"in_knitr":true,"in_notebook":false},"evals":[],"jsHooks":[]}</script>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

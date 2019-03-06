@@ -29,7 +29,7 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 
 ## 성남 3구 인구변화 데이터 {#sungnam-population-EDA-gu-new}
 
-```{r sungnam-population-EDA-gu-new}
+```{r sungnam-population-EDA-gu-new, eval=FALSE}
 library(tidyverse)
 library(lubridate)
 library(extrafont)
@@ -83,12 +83,15 @@ bundang_eul_df <- sungnam_age_df %>%
   summarise(`인구수` = sum(`인구수`)) %>% 
   ungroup() %>% 
   mutate(`연도` = factor(`연도`))
+
+bundang_eul_df %>% write_csv("data/bundang_eul_df.csv")
 ```
 
 
 # 분당을 인터랙티브 시각화 {#sungnam-trelliscope}
 
 ``` {r sungnam-population-dong-eul-crosstalk-viz}
+bundang_eul_df <- read_csv("data/bundang_eul_df.csv")
 library(trelliscopejs)
 library(rbokeh)
 

@@ -1,0 +1,112 @@
+---
+layout: page
+title: "제21대 국회의원 선거"
+subtitle: "성남시 인구변화 - 인터랙티브 작은 창"
+author:
+    name: xwMOOC
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: hide
+    number_section: true
+    self_contained: false
+editor_options: 
+  chunk_output_type: console
+mainfont: NanumGothic
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+
+
+```
+
+# 성남시 인구통계 {#sungnam-population-EDA-new}
+
+## 성남 3구 인구변화 데이터 {#sungnam-population-EDA-gu-new}
+
+```{r sungnam-population-EDA-gu-new}
+library(tidyverse)
+library(lubridate)
+library(extrafont)
+loadfonts()
+
+## 데이터 3구 연도별 종합 -----
+sungnam_2016_df <- read_rds("data/sungnam_2016_df.rds") %>% mutate(`연도` = ymd("2016-03-31") %>% year(.))
+sungnam_2017_df <- read_rds("data/sungnam_2017_df.rds") %>% mutate(`연도` = ymd("2017-03-31") %>% year(.))
+sungnam_2018_df <- read_rds("data/sungnam_2018_df.rds") %>% mutate(`연도` = ymd("2018-03-31") %>% year(.))
+sungnam_2019_df <- read_rds("data/sungnam_2019_df.rds") %>% mutate(`연도` = ymd("2019-02-28") %>% year(.))
+
+sungnam_df <- bind_rows(sungnam_2016_df, sungnam_2017_df) %>% 
+  bind_rows(sungnam_2018_df) %>% 
+  bind_rows(sungnam_2019_df) %>% 
+  mutate(`연령` = as.integer(`연령`))
+
+## 성남 3구 연령대 데이터프레임 -----
+sungnam_age_df <- sungnam_df %>% 
+  mutate(`연령대` = case_when(`연령` >=0 & `연령` <=5 ~   "0-5세",
+                              `연령` >=6 &  `연령` <=10 ~ "6-10세",
+                              `연령` >=11 & `연령` <=15 ~ "11-15세",
+                              `연령` >=16 & `연령` <=20 ~ "16-20세",
+                              `연령` >=21 & `연령` <=25 ~ "21-25세",
+                              `연령` >=26 & `연령` <=30 ~ "26-30세",
+                              `연령` >=31 & `연령` <=35 ~ "31-35세",
+                              `연령` >=36 & `연령` <=40 ~ "36-40세",
+                              `연령` >=41 & `연령` <=45 ~ "41-45세",
+                              `연령` >=46 & `연령` <=50 ~ "46-50세",
+                              `연령` >=51 & `연령` <=55 ~ "51-55세",
+                              `연령` >=56 & `연령` <=60 ~ "56-60세",
+                              `연령` >=61 & `연령` <=65 ~ "61-65세",
+                              `연령` >=66 & `연령` <=70 ~ "66-70세",
+                              `연령` >=71 & `연령` <=75 ~ "71-75세",
+                              `연령` >=76 & `연령` <=80 ~ "76-80세",
+                              `연령` >=81  ~ "80세+")) %>% 
+  mutate(`연령대` = factor(`연령대`,levels=c("0-5세","6-10세","11-15세","16-20세","21-25세","26-30세","31-35세","36-40세","41-45세","46-50세","51-55세","56-60세","61-65세","66-70세","71-75세","76-80세","80세+")))  %>% 
+    mutate(`선거구` = case_when(`행정동` %in%  c("구미1동", "구미동", "금곡동", "분당동", "수내1동", "수내2동", "수내3동","정자1동", 
+"정자2동", "정자3동", "정자동") ~ "분당을",
+                             TRUE ~ "분당갑"))
+
+
+## 분당을 연령대 데이터 -----
+
+bundang_eul_df <- sungnam_age_df %>% 
+  filter(`선거구` == "분당을") %>% 
+  group_by(`연도`, `연령대`, `행정동`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  ungroup() %>% 
+  mutate(`연도` = factor(`연도`))
+```
+
+
+# 분당을 인터랙티브 시각화 {#sungnam-trelliscope}
+
+``` {r sungnam-population-dong-eul-crosstalk-viz}
+## 맥 인코딩 ----- 
+Sys.setlocale('LC_CTYPE', 'ko_KR.UTF-8')
+options(encoding = "utf8")
+library(trelliscopejs)
+library(rbokeh)
+
+# 연도별, 행정동 중첩시킴.
+by_year_dong <- bundang_eul_df %>%
+  group_by(`행정동`) %>%
+  nest()
+
+# 시각화
+by_year_dong_bokeh <- by_year_dong %>% mutate(
+  panel = map_plot(data,
+    ~ figure() %>% 
+      ly_bar(`연령대`, `인구수`, color=`연도`,  position = "dodge", data = .x, hover = TRUE) %>% 
+      theme_axis("x", major_label_orientation = 90)
+    
+      # theme_axis("x", major_label_orientation = 90) %>% 
+      # set_palette(discrete_color = pal_color(c("blue", "gray60", "gray50", "red")))
+  )) 
+  
+by_year_dong_bokeh %>%  
+  trelliscope(name="bundang", nrow = 2, ncol = 2, path = "bundang_files")
+```

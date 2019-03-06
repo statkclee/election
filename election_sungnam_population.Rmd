@@ -12,9 +12,10 @@ output:
     highlight: tango
     code_folding: hide
     number_section: true
-    self_contained: true
+    self_contained: false
 editor_options: 
   chunk_output_type: console
+mainfont: NanumGothic
 ---
 
 ```{r setup, include=FALSE}
@@ -501,7 +502,7 @@ sungnam_age_df %>%
 ```
 
 
-## 분당을 동별 연령별 별화 {#sungnam-population-dong-change-bundang-eul}
+## 분당을 동별 연령별 변화 {#sungnam-population-dong-change-bundang-eul}
 
 ```{r sungnam-population-dong-change-bundang-eul}
 sungnam_age_df %>% 
@@ -532,5 +533,72 @@ sungnam_age_df %>%
   spread(`연도`, `인구수`) %>% 
   DT::datatable() %>% 
     DT::formatRound(3:6, digits=0)
+
+```
+
+
+## 분당을 인터랙티브 분석 {#sungnam-population-advanced-bundang-eul}
+
+## 분당을 인터랙티브 테이블 {#sungnam-population-dong-change-bundang-eul}
+
+```{r sungnam-population-dong-eul-crosstalk}
+library(crosstalk)
+
+# 공유 데이터 -----
+
+bundang_eul_df <- sungnam_age_df %>% 
+  filter(`선거구` == "분당을") %>% 
+  group_by(`연도`, `연령대`, `행정동`) %>% 
+  summarise(`인구수` = sum(`인구수`)) %>% 
+  ungroup() %>% 
+  mutate(`연도` = factor(`연도`))
+
+bundang_eul_sd <- SharedData$new(bundang_eul_df)
+
+# 제어 -----
+
+year_filter <-  filter_checkbox("연도", "연도", bundang_eul_sd, ~`연도`, inline = TRUE)
+dong_filter <-  filter_checkbox("행정동", "행정동", bundang_eul_sd, ~`행정동`, inline = TRUE)
+age_filter  <-  filter_checkbox("연령대", "연령대", bundang_eul_sd, ~`연령대`, inline = TRUE)
+
+# 인터랙티브 -----
+
+bscols(
+  list(
+    year_filter,
+    dong_filter, 
+    age_filter,
+    DT::datatable(bundang_eul_sd)
+  )
+)
+```
+
+
+
+## 분당을 인터랙티브 시각화 {#sungnam-population-visualization-bundang-eul}
+
+```{r sungnam-population-dong-eul-crosstalk-viz}
+options(encoding = "utf8")
+library(trelliscopejs)
+library(rbokeh)
+
+# 연도별, 행정동 중첩시킴.
+by_year_dong <- bundang_eul_df %>%
+  group_by(`행정동`) %>%
+  nest()
+
+# 시각화
+by_year_dong_bokeh <- by_year_dong %>% mutate(
+  panel = map_plot(data,
+    ~ figure() %>% 
+      ly_bar(`연령대`, `인구수`, color=`연도`,  position = "dodge", data = .x, hover = TRUE) %>% 
+      theme_axis("x", major_label_orientation = 90)
+    
+      # theme_axis("x", major_label_orientation = 90) %>% 
+      # set_palette(discrete_color = pal_color(c("blue", "gray60", "gray50", "red")))
+  )) 
+  
+by_year_dong_bokeh %>%  
+  trelliscope("Bundang", nrow = 2, ncol = 2)
 
 ```

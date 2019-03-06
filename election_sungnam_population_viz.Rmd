@@ -35,6 +35,10 @@ library(lubridate)
 library(extrafont)
 loadfonts()
 
+## 맥 인코딩 ----- 
+Sys.setlocale('LC_CTYPE', 'ko_KR.UTF-8')
+options(encoding = "utf8")
+
 ## 데이터 3구 연도별 종합 -----
 sungnam_2016_df <- read_rds("data/sungnam_2016_df.rds") %>% mutate(`연도` = ymd("2016-03-31") %>% year(.))
 sungnam_2017_df <- read_rds("data/sungnam_2017_df.rds") %>% mutate(`연도` = ymd("2017-03-31") %>% year(.))
@@ -85,9 +89,6 @@ bundang_eul_df <- sungnam_age_df %>%
 # 분당을 인터랙티브 시각화 {#sungnam-trelliscope}
 
 ``` {r sungnam-population-dong-eul-crosstalk-viz}
-## 맥 인코딩 ----- 
-Sys.setlocale('LC_CTYPE', 'ko_KR.UTF-8')
-options(encoding = "utf8")
 library(trelliscopejs)
 library(rbokeh)
 

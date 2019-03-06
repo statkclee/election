@@ -537,7 +537,7 @@ sungnam_age_df %>%
 ```
 
 
-## 분당을 인터랙티브 분석 {#sungnam-population-advanced-bundang-eul}
+# 분당을 인터랙티브 분석 {#sungnam-population-advanced-bundang-eul}
 
 ## 분당을 인터랙티브 테이블 {#sungnam-population-dong-change-bundang-eul}
 
@@ -577,7 +577,7 @@ bscols(
 
 ## 분당을 인터랙티브 시각화 {#sungnam-population-visualization-bundang-eul}
 
-```{r sungnam-population-dong-eul-crosstalk-viz}
+```{r sungnam-population-dong-eul-crosstalk-viz, eval=FALSE}
 options(encoding = "utf8")
 library(trelliscopejs)
 library(rbokeh)
@@ -599,6 +599,6 @@ by_year_dong_bokeh <- by_year_dong %>% mutate(
   )) 
   
 by_year_dong_bokeh %>%  
-  trelliscope("Bundang", nrow = 2, ncol = 2)
+  trelliscope(name="bundang", nrow = 2, ncol = 2, path = "bundang_files")
 
 ```

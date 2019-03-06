@@ -22,6 +22,9 @@ mainfont: NanumGothic
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
                       comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 
+library(tidyverse)
+library(readxl)
+library(testthat)
 
 ```
 
@@ -36,7 +39,7 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 
 ## 성남3구 인구통계 2016 {#sungnam-population-dataset-2016}
 
-```{r sungnam-population-dataset-2016}
+```{r sungnam-population-dataset-2016, eval=FALSE}
 library(tidyverse)
 library(readxl)
 library(testthat)
@@ -106,7 +109,7 @@ test_that("성남시 3구 인구수", {
 
 ## 성남3구 인구통계 2017 {#sungnam-population-dataset-2017}
 
-```{r sungnam-population-dataset-2017}
+```{r sungnam-population-dataset-2017, eval=FALSE}
 ## 2017년 수정구
 pop_sujung_201703 <- read_excel("data/2017.3월 인구현황.xlsx", sheet="연령별인구_수정", skip=6)
 
@@ -172,7 +175,7 @@ test_that("성남시 3구 인구수", {
 
 ## 성남3구 인구통계 2018 {#sungnam-population-dataset-2018}
 
-```{r sungnam-population-dataset-2018}
+```{r sungnam-population-dataset-2018, eval=FALSE}
 ## 2018년 수정구
 pop_sujung_201803 <- read_excel("data/민원여권과_2018.3. 인구현황.xlsx", sheet="연령별인구_수정", skip=5)
 
@@ -238,7 +241,7 @@ test_that("성남시 3구 인구수", {
 
 ## 성남3구 인구통계 2019 {#sungnam-population-dataset-2019}
 
-```{r sungnam-population-dataset-2019}
+```{r sungnam-population-dataset-2019, eval=FALSE}
 ## 2018년 수정구
 pop_sujung_201902 <- read_excel("data/민원여권과_2019년 2월 인구현황.xlsx", sheet="연령별 인구_수정", skip=5)
 

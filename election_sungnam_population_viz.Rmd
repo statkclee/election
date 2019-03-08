@@ -105,8 +105,6 @@ bundang_eul_df <- read_csv("data/bundang_eul_df.csv")
 bundang_eul_df <- bundang_eul_df %>% 
   mutate(`연령대` = factor(`연령대`, levels=c("0-5세","06-10세","11-15세","16-20세","21-25세","26-30세","31-35세","36-40세","41-45세","46-50세","51-55세","56-60세","61-65세","66-70세","71-75세","76-80세","80세+")))
 
-bundang_eul_df %>% count(연령대)
-
 bundang_eul_df %>% 
   filter(연도 %in% c(2016, 2019),
          행정동 == "구미동") %>% 

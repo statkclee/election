@@ -91,27 +91,93 @@ bundang_eul_df %>% write_csv("data/bundang_eul_df.csv")
 ```
 
 
-# 분당을 인터랙티브 시각화 {#sungnam-trelliscope}
+# 분당을 인터랙티브 시각화 - `rbokeh` {#sungnam-trelliscope-rbokeh}
 
-``` {r sungnam-population-dong-eul-crosstalk-viz}
-bundang_eul_df <- read_csv("data/bundang_eul_df.csv")
+## "구미동" 2016년 대비 2019년 인구수 변화 {#sungnam-trelliscope-rbokeh-dong}
+
+``` {r sungnam-population-dong-eul-rbokeh-dong}
+library(tidyverse)
 library(trelliscopejs)
 library(rbokeh)
 
+bundang_eul_df <- read_csv("data/bundang_eul_df.csv")
+
+bundang_eul_df %>% 
+  filter(연도 %in% c(2016, 2019),
+         행정동 == "구미동") %>% 
+  mutate(연도 = as.factor(연도)) %>% 
+  figure() %>% 
+    ly_bar(x = 연령대, y = 인구수, color = 연도, 
+           position = "dodge",
+           hover = TRUE) %>% 
+    theme_axis("x", major_label_orientation = 90) %>% 
+    set_palette(discrete_color = pal_color(c("darkgray", "blue")))
+```
+
+## 분당을 동전체 인구변화 {#sungnam-trelliscope-rbokeh-dong-all}
+
+``` {r sungnam-population-dong-eul-rbokeh-dong-all}
+bundang_eul_comp_df <- bundang_eul_df %>% 
+  filter(연도 %in% c(2016, 2019)) %>% 
+  mutate(연도 = as.factor(연도))
+
+bundang_eul_list <- split(bundang_eul_comp_df, bundang_eul_comp_df$행정동)
+
+## 시각화 함수
+age_plot <- function(df) {
+  df %>% 
+  figure(legend_location = NULL,
+         xlab="", ylab="") %>% 
+    ly_bar(x = 연령대, y = 인구수, color = 연도, 
+           position = "dodge",
+           hover = TRUE) %>% 
+    theme_axis("x", major_label_orientation = 90) %>% 
+    set_palette(discrete_color = pal_color(c("darkgray", "blue")))
+  }
+
+## 데이터를 함수에 적합(apply)
+bundang_fig_list <- lapply(bundang_eul_list, age_plot)
+
+## bokeh 시각화
+grid_plot(bundang_fig_list, same_axes = TRUE, 
+          width = 800, height=600, 
+          nrow = 3)
+```
+
+## 분당을 인터랙티브 시각화 {#sungnam-trelliscope}
+
+``` {r sungnam-population-dong-eul-crosstalk-viz}
+options(encoding = "utf-8")
+
 # 연도별, 행정동 중첩시킴.
+<<<<<<< HEAD
+by_year_dong <- bundang_eul_comp_df %>%
+  group_by(`행정동`) %>%
+=======
 by_year_dong <- bundang_eul_df %>%
   dplyr::mutate(연도 = factor(연도)) %>%
   group_by(`연도`, `행정동`) %>%
+>>>>>>> 57db0b8da96890f436de6ed756a0367d1eeb8803
   nest()
 
 # 시각화
 by_year_dong_bokeh <- by_year_dong %>% mutate(
   panel = map_plot(data,
+<<<<<<< HEAD
+    ~ .x %>% 
+      figure(legend_location = NULL,
+             xlab="", ylab="",
+             title="분당을 동별 2016 vs 2019년 인구구조 변화") %>% 
+      ly_bar(`연령대`, `인구수`, color=`연도`,  position = "dodge", hover = TRUE) %>% 
+      theme_axis("x", major_label_orientation = 90) %>% 
+      set_palette(discrete_color = pal_color(c("darkgray", "blue")))
+=======
     ~ figure(xlab="", ylab="") %>% 
       ly_bar(`연령대`, `인구수`,  position = "dodge", data = .x, hover = TRUE) %>% 
       theme_axis("x", major_label_orientation = 90)
       # theme_axis("x", major_label_orientation = 90) %>%  
       # set_palette(discrete_color = pal_color(c("blue", "gray60", "gray50", "red")))
+>>>>>>> 57db0b8da96890f436de6ed756a0367d1eeb8803
   )) 
   
 by_year_dong_bokeh %>%  

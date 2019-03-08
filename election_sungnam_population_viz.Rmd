@@ -154,6 +154,7 @@ options(encoding = "utf-8")
 
 # 연도별, 행정동 중첩시킴.
 by_year_dong <- bundang_eul_df %>%
+  filter(연도 %in% c(2016, 2019)) %>% 
   dplyr::mutate(연도 = factor(연도)) %>%
   group_by(`행정동`) %>%
   nest()

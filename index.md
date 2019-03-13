@@ -14,6 +14,7 @@ title: 대한민국 제21대 국회의원 선거
     - [정치지형 변화](election_politics.html)
         - [성남시 분당구](election_politics_votes.html)
             - [성남시 분당구 - 데이터/지도](election_bundang_data.html)
+            - [성남시 분당구 - 공간정도 시각화](election_bundang_data_map.html)
         - [성남시 분당구 - 공간정보](election_politics_votes_map.html)
     - [경제지형 변화](election_economics.html)
         - [지역내총생산(GRDP)](election_grdp.html)

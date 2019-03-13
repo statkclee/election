@@ -159,14 +159,14 @@ sungnam_sf %>%
 
 ## 분당구 행정동 `sf` 저장 {#sungnam-shapefile-sungnam-emd-sf}
 
-마지막으로 성남시 시군구 읍면동까지 잘 정리된 `sf` 데이터프레임으로 저장하여 다음 교차분석을 준비한다.
+마지막으로 성남시 시군구 읍면동까지 잘 정리된 `sf` 데이터프레임으로 저장하여 다음 교차분석을 준비한다. 한글이 된 필드가 포함된 경우 한글이 깨지는 경우가 있어, `layer_options = "ENCODING=UTF-8"`을 넣어 명시한다.
 
 ```{r sungnam-sigungu-emd-bundang-crs}
 sungnam_sf
 
 ## shapefile 저장
 dir.create('data/shapefile/sungnam')
-st_write(sungnam_sf, "data/shapefile/sungnam/sungnam_sf.shp", delete_dsn=TRUE)
+st_write(sungnam_sf, "data/shapefile/sungnam/sungnam_sf.shp", delete_dsn=TRUE, layer_options = "ENCODING=UTF-8")
 ```
 
 

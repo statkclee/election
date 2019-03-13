@@ -1,0 +1,175 @@
+---
+layout: page
+title: "제21대 국회의원 선거"
+subtitle: "성남시 분당구 - 데이터/지도"
+author:
+    name: xwMOOC
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: hide
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+
+
+```
+
+# 역대선거 득표 데이터 {#major-election}
+
+## 총선 &rarr; 대선 &rarr; 지선 {#major-election-data}
+
+`krvotes` 팩키지에서 준비된 총선, 대선, 지선 데이터를 바탕으로 분당구 득표 데이터를 비교가능하도록 정당별로 준비시킨다.
+
+- 2016년 총선 분당을의 경우 무소속 임태희 후보는 자한당으로 넣어 데이터를 준비한다.
+    - 민주당: 더불어민주당 김병관 + 더불어민주당 김병욱
+    - 자한당: 새누리당 권혁세 + 새누리당 전하진 + 무소속 임태희
+    - 바른미래당: 국민의당 염오봉 + 국민의당 윤은숙
+- 2017년 대선 유승민과 안철수는 합쳐서 바른미래당으로 준비한다.
+    - 바른미래당: 안철수 + 유승민
+- 2018년 시도지사선거, 경기도지사 득표수로 갈음
+    - 이재명, 남경필, 김영환, 이홍우
+
+
+```{r major-election-vote}
+library(tidyverse)
+library(krvotes)
+
+# 총선 2016 -----
+`총선_df` <- congress_2018 %>% 
+  filter(str_detect(`precinct`, "분당")) %>% 
+  unnest(data_clean) %>% 
+  group_by(`읍면동명`) %>% 
+  summarise(`민주당` = sum(`더불어민주당 김병관`, `더불어민주당 김병욱`, na.rm=TRUE),
+            `자한당` = sum(`새누리당 권혁세`, `새누리당 전하진`, `무소속 임태희`, na.rm=TRUE),
+            `바미당` = sum(`국민의당 염오봉`, `국민의당 윤은숙`, na.rm=TRUE)) %>% 
+  mutate(`선거` = "2016총선")
+
+# 대선 2017 -----
+`대선_df` <- president %>% 
+  tbl_df %>% 
+  filter(str_detect(`구시군명`, "분당")) %>% 
+  group_by(`읍면동명`) %>% 
+  summarise(`민주당` = sum(`문재인`),
+            `자한당` = sum(`홍준표`),
+            `바미당` = sum(`안철수`, `유승민`),
+            `정의당` = sum(`심상정`)) %>% 
+  mutate(`선거` = "2017대선")
+
+
+# 지선 2018 -----
+`지선_df` <- local_2018 %>% 
+  filter(str_detect(`시도명`, "경기")) %>% 
+  select(-`시도명`) %>% 
+  unnest(data_clean) %>% 
+  filter(str_detect(`구시군명`, "분당")) %>% 
+  group_by(`읍면동명`) %>% 
+  summarise(`민주당` = sum(`더불어민주당 이재명`),
+            `자한당` = sum(`자유한국당 남경필`),
+            `바미당` = sum(`바른미래당 김영환`),
+            `정의당` = sum(`정의당 이홍우`)) %>% 
+  mutate(`선거` = "2018지선")
+
+`분당_df` <- bind_rows(`총선_df`, `대선_df`) %>% 
+  bind_rows(`지선_df`) %>% 
+  filter(!str_detect(`읍면동명`, "잘못")) %>% 
+  mutate(`정의당` = ifelse(is.na(`정의당`), 0, `정의당`)) %>% 
+  select(`선거`, everything())
+```
+
+
+## 분당구 정당별 득표 테이블 {#major-election-분당-table}
+
+2016년 총선부터 2018년 지선까지 연도별 분당구 민주당, 자한당, 바른미래당, 정의당 정당별 득표율을 다음과 같은 표로 정리한다.
+
+```{r major-election-분당-vote-table, fig.width=12, fig.height=10}
+`분당_df` %>% 
+  gather(`정당`, `득표수`, -`선거`, -`읍면동명`) %>% 
+  mutate(`정당` = factor(`정당`, levels = c("민주당", "자한당", "바미당", "정의당"))) %>% 
+  group_by(`선거`, `정당`) %>% 
+  summarise(`득표수` = sum(`득표수`)) %>% 
+  spread(`정당`, `득표수`) %>% 
+  DT::datatable() %>% 
+    DT::formatRound(2:5, digits = 0)
+```
+
+## 분당구 동별 득표 테이블 {#major-election-dong-table}
+
+```{r bundang-dong-table}
+`분당_df` %>% 
+  gather(`정당`, `득표수`, -`선거`, -`읍면동명`) %>% 
+  mutate(`정당` = factor(`정당`, levels = c("민주당", "자한당", "바미당", "정의당"))) %>% 
+  group_by(`선거`, `정당`, `읍면동명`) %>% 
+  summarise(`득표수` = sum(`득표수`)) %>% 
+  spread(`정당`, `득표수`) %>% 
+  DT::datatable() %>% 
+    DT::formatRound(3:6, digits=0)
+
+```
+
+## 득표 데이터 저장 {#major-election-save-data}
+
+`총선 &rarr; 대선 &rarr; 지선` 데이터에서 성남시 분당구만 추출하여 동별로 데이터프레임으로 작성하여 로컬컴퓨터에 저장하여 다시 재작업하는 일을 방지한다.
+
+```{r bundang-dong-map-ggplot}
+`분당_df` %>% 
+  write_rds("data/분당_df.rds")
+```
+
+
+# 성남시 분당구 `sf` 지도 {#sungnam-sf}
+
+## 분당구 행정동 `Shapefile` 추출 {#sungnam-shapefile-sungnam-emd}
+
+시군구 `shapefile` 작업을 했을 때와 동일한 방식으로 작업을 수행하는데 이번에는 읍면동 `shapefile`을 사용한다.
+읍면동 `shapefile`에 시군구 정보가 빠져있다 보니 [행정안전부 지방행정실 홈페이지](https://www.mois.go.kr/frt/bbs/type001/commonSelectBoardList.do?bbsId=BBSMSTR_000000000052)에서 "행정동코드(전체) 및 법정동·행정동코드"을 참조하여 수정구, 중원구, 분당구를 구분하는 필드를 `SIGUNGU`로 추가하여 시각화를 한다.
+
+```{r sungnam-sigungu-emd-gu}
+library(sf)
+
+emd_sf <- st_read("data/shapefile/EMD_201902/TL_SCCO_EMD.shp")
+
+## 인코딩 변경
+emd_sf$EMD_KOR_NM <- iconv(emd_sf$EMD_KOR_NM, from = "CP949", to = "UTF-8", sub = NA, mark = TRUE, toRaw = FALSE)
+
+## 좌표계 변경: 웹 메르카도(web mercator)
+emd_sf <- st_transform(emd_sf, "+proj=longlat +datum=WGS84")
+
+## 성남시 행정동 코드: 4113000000
+sungnam_sf <- emd_sf %>% 
+  mutate(SIGUNGU = case_when(str_detect(EMD_CD, "^41131") ~ "수정구",
+                             str_detect(EMD_CD, "^41133") ~ "중원구",
+                             str_detect(EMD_CD, "^41135") ~ "분당구")) %>% 
+  filter(!is.na(SIGUNGU))
+
+## 시각화
+sungnam_sf %>% 
+  plot()
+```
+
+
+## 분당구 행정동 `sf` 저장 {#sungnam-shapefile-sungnam-emd-sf}
+
+마지막으로 성남시 시군구 읍면동까지 잘 정리된 `sf` 데이터프레임으로 저장하여 다음 교차분석을 준비한다.
+
+```{r sungnam-sigungu-emd-bundang-crs}
+sungnam_sf
+
+## shapefile 저장
+dir.create('data/shapefile/sungnam')
+st_write(sungnam_sf, "data/shapefile/sungnam/sungnam_sf.shp", delete_dsn=TRUE)
+```
+
+
+
+
+

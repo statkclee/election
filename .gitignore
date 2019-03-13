@@ -17,3 +17,9 @@ data/*.docx
 data/hy_video_comment_list.rds
 doc/
 config.yml
+data/shapefile/CTPRVN_201902
+data/shapefile/EMD_201902
+data/shapefile/jscode20190301
+data/shapefile/SIG_201902
+data/gadm36_KOR_2_sf.rds
+

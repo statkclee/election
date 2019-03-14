@@ -67,3 +67,27 @@ bundang_sf %>%
 ```
 
 
+# 위경도 - 카카오 API {#eleciton-data-lonlat}
+
+## 성남시청 {#bundang-2018-lonlat-cityhall}
+
+
+```{r bundang-voting-2018}
+# 주소를 지정합니다. 
+sungnam_addr <- '서울특별시 강남구 역삼동 737' 
+
+# HTTP 요청을 실행합니다. 
+kpmg_res <- GET(url = 'https://dapi.kakao.com/v2/local/search/address.json',
+           query = list(query = kpmg_addr),
+           add_headers(Authorization = paste0("KakaoAK ", DAUM_MAP_API_KEY)))
+
+# KPMG 지리정보 데이터프레임
+kpmg_list <- kpmg_res %>% 
+  content(as = 'text') %>% 
+  fromJSON()
+
+## 도로명주소
+kpmg_list$documents$road_address %>% 
+  select(address_name, building_name, x,y)
+
+```

@@ -1,0 +1,222 @@
+---
+layout: page
+title: "제21대 국회의원 선거"
+subtitle: "지방자치단체 - 공간정보"
+author:
+    name: xwMOOC
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: hide
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+```
+
+# 지방자치단체 위치 {#local-government}
+
+## 지방자치단체 기초 정보 {#local-government-basic-info}
+
+[한국지역정보개발원](http://www.klid.or.kr/) 웹사이트에서 `정보화자료실` &rarr; `관련사이트` &rarr; `지방자치단체` 웹사이트에서 전국 지방자치단체 주소, 전화번호, 홈페이지 정보를 크롤링하여 준비한다.
+
+```{r local-gov-basic-info}
+library(tidyverse)
+library(httr)
+library(rvest)
+
+## 크롤링 결과 저장할 리스트 객체
+local_list <- list()
+
+## 지방자치단체 정보 가져오기
+Sys.setlocale("LC_ALL", "C")
+
+for(i in 1:17) {
+  
+  local_url <- paste0("http://www.klid.or.kr/section/content/content.html?PID=localagency", i)
+  cat(local_url, "\n")
+  
+  local_list[[i]] <- local_url %>% 
+  read_html() %>% 
+  html_node(xpath='//*[@id="content"]/div[2]/table') %>%
+  html_table(fill=TRUE)
+}
+
+Sys.setlocale("LC_ALL", "Korean")
+
+# listviewer::jsonedit(local_list)
+
+## 지방자치단체 정보 데이터프레임 변환
+local_df <- map_df(local_list, unnest)
+
+local_df %>% 
+  mutate(`홈페이지` = paste0("<a href=", `홈페이지`, ">", `홈페이지`, "</a>")) %>% 
+  DT::datatable(escape=FALSE)
+```
+
+
+## 지방자치단체 위경도 정보 {#local-government-lonlat}
+
+카카오 API를 사용하여 주소정보를 던져서 해당 지방자치단체 위경도 정보를 받아낸다.
+먼저 주소를 `get_lonlat()`함수에 던지면 주소를 반환하는 함수를 작성해서 시범운영한다.
+
+```{r local-gov-lonlat-dry-run}
+library(jsonlite)
+
+get_lonlat <- possibly(function(addr) {
+  # HTTP 요청을 실행합니다. 
+  addr_res <- GET(url = 'https://dapi.kakao.com/v2/local/search/address.json',
+             query = list(query = addr),
+             add_headers(Authorization = paste0("KakaoAK ", DAUM_MAP_API_KEY)))
+  
+  # KPMG 지리정보 데이터프레임
+  addr_list <- addr_res %>% 
+    content(as = 'text') %>% 
+    fromJSON()
+  
+  ## 도로명주소
+  res_df <- addr_list$documents$road_address %>% 
+    select(address_name, building_name, x,y)
+  
+  return(res_df)
+}, otherwise = NA)
+
+get_lonlat('성남시 수정구 수정로 283')
+```
+
+지방자치단체 주소 전체를 던져 위경도좌표를 받아낸다. 이런 과정에서 카카오 API에서 위도와 경도를 반환하지 못하는 지방자치단체 주소를 찾아본다. 
+
+```{r local-gov-lonlat-run-all}
+local_lonlat_dat <- local_df %>% 
+  mutate(`주소` = str_remove(`주소`, '제[12]청사 :')) %>% # 서귀포시
+  mutate(`주소` = case_when(str_detect(`주소`, "성남시 수정구 수정로 293") ~ "성남시 수정구 수정로 283",
+                          TRUE ~ `주소`)) %>% 
+  mutate(lonlat = map(`주소`, get_lonlat))
+
+local_lonlat_dat %>% 
+  filter(is.na(lonlat)) %>% 
+  DT::datatable()
+```
+
+카카오API를 통해 전달받은 위경도 정보를 후속 시각화를 위해서 데이터 정비작업을 수행한다.
+
+```{r local-gov-lonlat-run-all-save}
+local_lonlat_df <- local_lonlat_dat %>%
+  # filter(!is.na(lonlat)) %>%
+  mutate(lon_multi = map(lonlat, 3),
+         lat_multi = map(lonlat, 4)) 
+
+local_lonlat_df <- local_lonlat_df %>% 
+  filter(!is.na(lonlat)) %>%
+  mutate(lon = map_chr(lon_multi, 1) %>% as.numeric,
+         lat = map_chr(lat_multi, 1) %>% as.numeric) %>% 
+  select(-lonlat, -lon_multi, -lat_multi)
+
+local_lonlat_df %>% write_rds("data/local_lonlat_df.rds")
+
+DT::datatable(local_lonlat_df)
+```
+
+
+# 시각화 {#local-government-viz}
+
+## 지방자치단체 위치 {#local-government-viz-marker}
+
+지방자치단체 위경도 정보를 `leaflet` 팩키지에 넣어 `addMarkers()` 함수로 지도상에 인터랙티브하게 팝업 마커로 시각화한다.
+
+```{r local-gov-lonlat-viz-map}
+library(leaflet)
+
+leaflet() %>%
+  addTiles() %>% 
+  addProviderTiles(providers$OpenStreetMap) %>% 
+  addMarkers(data=local_lonlat_df, lng=~lon, lat=~lat, clusterOptions = markerClusterOptions(),
+                   popup = ~ as.character(paste0("<strong>", paste0("지방자치단체: ",`기관명`), "</strong><br>",
+                                                 "-----------------------------------------------------------<br>",
+                                                 "&middot; 주소: ", `주소`, "<br>",
+                                                 "&middot; 전화번호: ", `전화번호`, "<br>",
+                                                 "&middot; 홈페이지: ", `홈페이지`, "<br>")))
+
+
+```
+
+
+## 지방자치단체 지도 {#local-government-viz-map}
+
+대한민국 최신 행정구역(SHP) 다운로드 웹사이트에서 “시군구” shapefile을 다운로드 받아 시도 지리정보를 시각화할 수 있는 지도를 준비한다.
+
+```{r local-gov-lonlat-viz-map-shape}
+library(sf)
+
+sigungu_sf <- st_read("data/shapefile/SIG_201902/TL_SCCO_SIG.shp")
+
+## 인코딩 변경
+sigungu_sf$SIG_KOR_NM <- iconv(sigungu_sf$SIG_KOR_NM, from = "CP949", to = "UTF-8", sub = NA, mark = TRUE, toRaw = FALSE)
+
+## 좌표계 변경: 웹 메르카도(web mercator)
+sigungu_sf <- st_transform(sigungu_sf, "+proj=longlat +datum=WGS84")
+
+## 시각화 
+sigungu_sf %>% 
+  select(SIG_KOR_NM) %>% 
+  plot()
+```
+
+`leaflet` 팩키지 `addPolygons`을 통해 지도위에 주제도를 입힐 수 있도록 인터랙티브 시각화를 준비한다.
+
+```{r local-gov-lonlat-viz-map-interactive}
+kangwon_sf <- sigungu_sf %>% 
+  filter(str_detect(SIG_CD, "^42"))
+
+## 라벨
+pop_labels <- sprintf(
+  "<strong>%s</strong><br/>",
+  kangwon_sf$SIG_KOR_NM) %>% lapply(htmltools::HTML)
+
+kangwon_sf %>% 
+  leaflet() %>%
+  addTiles() %>% 
+  addPolygons(opacity = 1.0, fillOpacity = 0.5,
+              weight = 1,
+              highlightOptions = highlightOptions(color = "black", weight = 3,  bringToFront = TRUE),
+              label = pop_labels,
+              labelOptions = labelOptions(
+              style = list("font-weight" = "normal", padding = "3px 8px"),
+              textsize = "15px",
+              direction = "auto")) 
+```
+
+
+
+# 인터랙티브 지도 {#local-government-viz-map-all}
+
+마커와 다각형(polygon)을 결합시켜 지방자치단체 면적과 함께 시군청이 지도위에 나타나도록 인터랙티브하게 작업하여 마무리한다.
+
+```{r local-gov-lonlat-viz-map-all}
+leaflet(kangwon_sf) %>%
+  addTiles() %>% 
+  addPolygons(opacity = 1.0, fillOpacity = 0.5,
+              weight = 1,
+              highlightOptions = highlightOptions(color = "black", weight = 3,  bringToFront = TRUE),
+              label = pop_labels,
+              labelOptions = labelOptions(
+              style = list("font-weight" = "normal", padding = "3px 8px"),
+              textsize = "15px",
+              direction = "auto")) %>% 
+    addProviderTiles(providers$OpenStreetMap) %>% 
+    addMarkers(data=local_lonlat_df, lng=~lon, lat=~lat, clusterOptions = markerClusterOptions(),
+                   popup = ~ as.character(paste0("<strong>", paste0("지방자치단체: ",`기관명`), "</strong><br>",
+                                                 "-----------------------------------------------------------<br>",
+                                                 "&middot; 주소: ", `주소`, "<br>",
+                                                 "&middot; 전화번호: ", `전화번호`, "<br>",
+                                                 "&middot; 홈페이지: ", `홈페이지`, "<br>")))
+  
+```

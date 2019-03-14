@@ -1,0 +1,201 @@
+---
+layout: page
+title: "제21대 국회의원 선거"
+subtitle: "성남시 - 분당구와 행정동"
+author:
+    name: xwMOOC
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: hide
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+```
+
+# 분당구와 행정동 {#bundang-map}
+
+성남시 분당구를 대상으로 분당구에 속한 모든 동정보를 취합한다.
+
+## 분당구 - 주민센터 {#bundang-map-data}
+
+먼저 [분당구 주민자치센터](http://www.bundang-gu.go.kr/dong/center/center/sub01.asp) 웹페이지에서
+각동별 주민자치센터가 위치한 주소정보를 파악하고 웹크롤링하여 데이터프레임으로 생성시킨다.
+
+
+```{r bungdang-map-data}
+library(tidyverse)
+library(sf)
+library(httr)
+library(rvest)
+
+## 성남시 분당구 주민자치센터: 주소
+Sys.setlocale("LC_ALL", "C")
+dong_url <- 'http://www.bundang-gu.go.kr/dong/center/center/sub01.asp'
+
+dong_dat <- dong_url %>% 
+  read_html() %>% 
+  html_node(xpath='//*[@id="container"]/div[2]/div[2]/div[2]/div[2]/table') %>% 
+  html_table(fill=TRUE) 
+
+Sys.setlocale("LC_ALL", "Korean")
+
+dong_df <- dong_dat %>% 
+  select(-`홈페이지`) %>% 
+  filter(str_detect(`주소`, '[0-9]'))
+
+DT::datatable(dong_df)
+```
+
+
+## 분당구 - 주민센터 (위경도)  {#bundang-map-lonlat}
+
+카카오 지도 API를 통해 주소를 던져 위도와 경도 정보를 받아내서 공간정보를 품은 데이터프레임을 생성시킨다.
+`get_lonlat()` 함수로 위경도정보를 받아오는 것을 시범운영한다.
+
+```{r bungdang-map-lonlat-dryrun}
+library(jsonlite)
+
+get_lonlat <- possibly(function(addr) {
+  # HTTP 요청을 실행합니다. 
+  addr_res <- GET(url = 'https://dapi.kakao.com/v2/local/search/address.json',
+             query = list(query = addr),
+             add_headers(Authorization = paste0("KakaoAK ", DAUM_MAP_API_KEY)))
+  
+  # KPMG 지리정보 데이터프레임
+  addr_list <- addr_res %>% 
+    content(as = 'text') %>% 
+    fromJSON()
+  
+  ## 도로명주소
+  res_df <- addr_list$documents$road_address %>% 
+    select(address_name, building_name, x,y)
+  
+  return(res_df)
+}, otherwise = NA)
+
+get_lonlat(dong_df$`주소`[1])
+```
+
+전체 주민자치센터에 대한 주소를 카카오 지도 API에 던져 위경도를 받아낸다.
+그리고 나서 후처리 작업(문자형 위경도 정보를 숫자형 위경도로 변환)을 수행한다.
+
+```{r bungdang-map-lonlat}
+bundang_lonlat_dat <- dong_df %>% 
+  mutate(lonlat = map(`주소`, get_lonlat))
+
+bundang_df <- bundang_lonlat_dat %>% 
+  mutate(lon = map(lonlat, 3) %>% unlist %>% as.numeric,
+         lat = map(lonlat, 4) %>% unlist %>% as.numeric) %>% 
+  select(-contains("전화"), -lonlat)
+
+bundang_df %>% 
+  DT::datatable() %>% 
+  DT::formatRound(c("lon", "lat"), digits=3)
+```
+
+
+# 분당구 시각화 {#bundang-map-viz}
+
+취합된 성남시 분당구를 대상으로 분당구에 속한 모든 동정보를 지리정보로 시각화한다.
+
+## 주민자치센터 위치 {#local-government-viz-marker}
+
+지방자치단체 위경도 정보를 `leaflet` 팩키지에 넣어 `addMarkers()` 함수로 지도상에 인터랙티브하게 팝업 마커로 시각화한다.
+
+
+```{r bundang-dong-shapefile-viz}
+library(leaflet)
+
+leaflet() %>%
+  addTiles() %>% 
+  addProviderTiles(providers$OpenStreetMap) %>% 
+  addMarkers(data=bundang_df, lng=~lon, lat=~lat, clusterOptions = markerClusterOptions(),
+                   popup = ~ as.character(paste0("<strong>", paste0("주민센터명: ", `주민센터명`), "</strong><br>",
+                                                 "-----------------------------------------------------------<br>",
+                                                 "&middot; 주소: ", `주소`, "<br>")))
+
+```
+
+
+## 분당구 - 주민센터 지도 {#bundang-map-shapefile}
+
+```{r bundang-dong-shapefile}
+library(sf)
+
+emd_sf <- st_read("data/shapefile/EMD_201902/TL_SCCO_EMD.shp")
+
+bundang_sf <- emd_sf %>% 
+  filter(str_detect(EMD_CD, "^41135"))
+
+## 인코딩 변경
+bundang_sf$EMD_KOR_NM <- iconv(bundang_sf$EMD_KOR_NM, from = "CP949", to = "UTF-8", sub = NA, mark = TRUE, toRaw = FALSE)
+
+## 좌표계 변경: 웹 메르카도(web mercator)
+bundang_sf <- st_transform(bundang_sf, "+proj=longlat +datum=WGS84")
+
+bundang_sf %>% 
+  select(EMD_KOR_NM) %>% 
+  plot()
+```
+
+`leaflet` 팩키지 `addPolygons`을 통해 지도위에 주제도를 입힐 수 있도록 인터랙티브 시각화를 준비한다.
+
+```{r bundang-map-interactive}
+## 라벨
+addr_labels <- sprintf(
+  "<strong>%s</strong><br/>",
+  bundang_sf$EMD_KOR_NM) %>% lapply(htmltools::HTML)
+
+bundang_sf %>% 
+  leaflet() %>%
+  addTiles() %>% 
+  addPolygons(opacity = 1.0, fillOpacity = 0.5,
+              weight = 1,
+              highlightOptions = highlightOptions(color = "black", weight = 3,  bringToFront = TRUE),
+              label = addr_labels,
+              labelOptions = labelOptions(
+              style = list("font-weight" = "normal", padding = "3px 8px"),
+              textsize = "15px",
+              direction = "auto")) 
+```
+
+
+# 인터랙티브 지도 {#local-government-viz-map-all}
+
+마커와 다각형(polygon)을 결합시켜 분당구 면적과 함께 주민자치센터 위치가 지도위에 나타나도록 인터랙티브하게 작업하여 마무리한다.
+
+```{r local-gov-lonlat-viz-map-all}
+leaflet(bundang_sf) %>%
+  addTiles() %>% 
+  addPolygons(opacity = 1.0, fillOpacity = 0.5,
+              weight = 1,
+              highlightOptions = highlightOptions(color = "black", weight = 3,  bringToFront = TRUE),
+              label = addr_labels,
+              labelOptions = labelOptions(
+              style = list("font-weight" = "normal", padding = "3px 8px"),
+              textsize = "15px",
+              direction = "auto")) %>% 
+    addProviderTiles(providers$OpenStreetMap) %>% 
+    addMarkers(data=bundang_df, lng=~lon, lat=~lat, clusterOptions = markerClusterOptions(),
+                   popup = ~ as.character(paste0("<strong>", paste0("주민센터명: ", `주민센터명`), "</strong><br>",
+                                                 "-----------------------------------------------------------<br>",
+                                                 "&middot; 주소: ", `주소`, "<br>")))
+  
+```
+
+
+
+
+
+
+

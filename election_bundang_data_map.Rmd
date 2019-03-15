@@ -20,6 +20,30 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
                       comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+
+library(tidyverse)
+library(httr)
+library(jsonlite)
+
+get_lonlat <- possibly(function(addr) {
+  # HTTP 요청을 실행합니다. 
+  addr_res <- GET(url = 'https://dapi.kakao.com/v2/local/search/address.json',
+             query = list(query = addr),
+             add_headers(Authorization = paste0("KakaoAK ", DAUM_MAP_API_KEY)))
+  
+  # KPMG 지리정보 데이터프레임
+  addr_list <- addr_res %>% 
+    content(as = 'text') %>% 
+    fromJSON()
+  
+  ## 도로명주소
+  res_df <- addr_list$documents$road_address %>% 
+    select(address_name, building_name, x,y)
+  
+  return(res_df)
+}, otherwise = NA)
+
+get_lonlat(dong_df$`주소`[1])
 ```
 
 # 기초 데이터 {#eleciton-data}
@@ -32,10 +56,18 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 library(tidyverse)
 library(sf)
 
+`분당을` <- c("구미동", "구미1동", "금곡동", "분당동", "수내1동", "수내2동", "수내3동", 
+              "정자동", "정자1동", "정자2동", "정자3동")
+
 ## 분당 득표 데이터
 `분당_df` <- read_rds("data/분당_df.rds")
 ## 분당 지도 데이터
-sungnam_sf <- st_read("data/shapefile/sungnam/sungnam_sf.shp",  options = "ENCODING=UTF-8")
+hjd_sf <- st_read("data/shapefile/HangJeongDong_ver2018xxxx_for_update.geojson")
+
+bundang_sf <- hjd_sf %>% 
+  filter(str_detect(adm_nm, "분당구")) %>% 
+  mutate(`읍면동명` = str_extract(adm_nm, "(\\w+)$")) %>% 
+  filter(`읍면동명` %in% `분당을`)
 ```
 
 ## 득표 지도 데이터 병합 {#major-election-import-data}
@@ -46,48 +78,94 @@ sungnam_sf <- st_read("data/shapefile/sungnam/sungnam_sf.shp",  options = "ENCOD
 ## 데이터 병합
 `분당_2018_df` <- `분당_df` %>% 
   filter(str_detect(`선거`, "2018")) %>% 
-  rename(EMD_KOR_NM = `읍면동명`) %>% 
   select(-`선거`)
 
-bundang_sf <- left_join(sungnam_sf, `분당_2018_df`, by="EMD_KOR_NM") %>% 
+bundang_map_sf <- left_join(bundang_sf, `분당_df`, by="읍면동명") %>% 
   filter(!is.na(`민주당`))
 ```
 
 
 # 득표 시각화 {#eleciton-data-viz}
 
-## 지선(2018) 분당구 {#bundang-2018}
+## 분당을 - 11개동 (단계구분도) {#bundang-eul}
 
 
-```{r bundang-voting-2018}
-bundang_sf %>% 
+```{r bundang-eul-voting}
+bundang_map_sf %>% 
   ggplot(aes(fill=`민주당`)) +
-    geom_sf()
-
+    geom_sf() +
+    facet_wrap(~`선거`)
 ```
 
 
-# 위경도 - 카카오 API {#eleciton-data-lonlat}
+## 분당을 - 11개동 (마커) {#bundang-eul-marker}
 
-## 성남시청 {#bundang-2018-lonlat-cityhall}
+```{r bundang-eul-voting-marker}
+## 주민자치단체 위경도 : 성남시 - 분당구와 행정동, election_sigungu_sungnam_dong.html
+bundang_lonlat_df <- read_rds("data/shapefile/bundang_lonlat_df.rds") %>% 
+  rename(`읍면동명` = `주민센터명`) %>% 
+  filter(`읍면동명` %in% `분당을`) %>% 
+  select(`읍면동명`, lon, lat)
+
+bundang_map_sf <- left_join(bundang_map_sf, bundang_lonlat_df)
+
+## 마커 시각화
+library(leaflet)
+
+bundang_map_sf %>% 
+  filter(str_detect(`선거`, "2018")) %>% 
+leaflet() %>%
+  addTiles() %>% 
+  addProviderTiles(providers$OpenStreetMap) %>% 
+  addMarkers(lng=~lon, lat=~lat, clusterOptions = markerClusterOptions(),
+                   popup = ~ as.character(paste0("<strong>", paste0("읍면동명: ", `읍면동명`), "</strong><br>",
+                                                 "-----------------------------------------------------------<br>",
+                                                 "&middot; 민주당: ", scales::comma(`민주당`), "<br>",
+                                                 "&middot; 자한당: ", scales::comma(`자한당`), "<br>",
+                                                 "&middot; 바미당: ", scales::comma(`바미당`), "<br>",
+                                                 "&middot; 정의당: ", scales::comma(`정의당`), "<br>")))
+
+```
+
+# 분당을 - 11개동 {#bundang-eul-dong}
+
+```{r bundang-eul-voting-marker-all}
+bundang_map_2018_sf <- bundang_map_sf %>% 
+  filter(str_detect(`선거`, "2018"))
 
 
-```{r bundang-voting-2018}
-# 주소를 지정합니다. 
-sungnam_addr <- '서울특별시 강남구 역삼동 737' 
+## 팔레트
+vote_bins <- c(0, 2000, 4000, 6000, 8000, 10000)
+vote_pal  <- colorBin("PuBu", domain = bundang_map_2018_sf$`민주당`, bins = vote_bins)
 
-# HTTP 요청을 실행합니다. 
-kpmg_res <- GET(url = 'https://dapi.kakao.com/v2/local/search/address.json',
-           query = list(query = kpmg_addr),
-           add_headers(Authorization = paste0("KakaoAK ", DAUM_MAP_API_KEY)))
+## 라벨
+dong_labels <- sprintf(
+  "<strong>%s</strong><br/>",
+  bundang_map_2018_sf$`읍면동명`) %>% lapply(htmltools::HTML)
 
-# KPMG 지리정보 데이터프레임
-kpmg_list <- kpmg_res %>% 
-  content(as = 'text') %>% 
-  fromJSON()
 
-## 도로명주소
-kpmg_list$documents$road_address %>% 
-  select(address_name, building_name, x,y)
-
+bundang_map_2018_sf %>% 
+  leaflet() %>%
+  addTiles() %>% 
+  addProviderTiles(providers$OpenStreetMap) %>% 
+  addMarkers(lng=~lon, lat=~lat, clusterOptions = markerClusterOptions(),
+                   popup = ~ as.character(paste0("<strong>", paste0("읍면동명: ", `읍면동명`), "</strong><br>",
+                                                 "-----------------------------------------------------------<br>",
+                                                 "&middot; 민주당: ", scales::comma(`민주당`), "<br>",
+                                                 "&middot; 자한당: ", scales::comma(`자한당`), "<br>",
+                                                 "&middot; 바미당: ", scales::comma(`바미당`), "<br>",
+                                                 "&middot; 정의당: ", scales::comma(`정의당`), "<br>"))) %>% 
+  addPolygons(opacity = 1.0, fillOpacity = 0.9,
+            weight = 1,
+            highlightOptions = highlightOptions(color = "black", weight = 3,  bringToFront = TRUE),
+            label = dong_labels,
+            fillColor = ~vote_pal(`민주당`),
+            labelOptions = labelOptions(
+            style = list("font-weight" = "normal", padding = "3px 8px"),
+            textsize = "15px",
+            direction = "auto")) %>% 
+    addLegend("bottomright", pal = vote_pal, values = ~`민주당`,
+    title = "민주당 득표",
+    labFormat = labelFormat(suffix = "명"),
+    opacity = 1)
 ```

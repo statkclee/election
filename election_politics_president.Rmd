@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "대한민국 제21대 국회의원 선거"
-subtitle: "정치지형 변화"
+subtitle: "정치지형 변화 - 대선"
 author:
     name: xwMOOC
 date: "`r Sys.Date()`"
@@ -23,17 +23,16 @@ knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE,
 
 ```
 
-# 정치 지형의 변화 {#political-party}
-
-정치 지형의 변화는 대선, 총선, 지선의 3대 선거별로 전체 득표율, 시도별 득표율, 시군구별 득표율, 동 및 투표구별 득표율의 변화를 살펴볼 수 있다.
-
-# 대선
-
-# 총선
-
-# 지선
+# 데이터셋 {#presidential-eleciton}
 
 
+```{r}
+# 0. 환경설정 -----
+library(tidyverse)
+library(rvest)
+library(httr)
 
+# 1. 데이터 받아오기 -----
+## 1.1 POST() 함수를 사용하여 시도지사선거의 서울특별시 종로구 개표 결과를 수집합니다.
 
-
+```

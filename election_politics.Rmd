@@ -21,6 +21,11 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
                       comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 
+# 0. 환경설정 -----
+library(tidyverse)
+library(rvest)
+library(httr)
+
 ```
 
 # 정치 지형의 변화 {#political-party}
@@ -32,48 +37,6 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 # 총선
 
 # 지선
-
-```{r election-download}
-# 0. 환경설정 -----
-library(tidyverse)
-library(rvest)
-library(httr)
-
-# 1. 데이터 받아오기 -----
-## 1.1 POST() 함수를 사용하여 개표 결과를 수집합니다.
-resp <- POST(
-    url = 'http://info.nec.go.kr/electioninfo/electionInfo_report.xhtml',
-    encode = 'form', 
-    body = list(
-       electionId = "0000000000",
-       requestURI = "/WEB-INF/jsp/electioninfo/0000000000/vc/vccp09.jsp",
-       topMenuId = "VC",
-       secondMenuId = "VCCP09",
-       menuId = "VCCP09",
-       statementId = "VCCP09_#1",
-       oldElectionType = "1",
-       electionType = "1",
-       electionName = "20170509",
-       electionCode = "1",
-       cityCode = "1100",
-       townCode = "-1",
-       sggCityCode = "-1"
-    )
-  )
-
-Sys.setlocale("LC_ALL", "C")
-
-## Wireshark 데이터 가져오기
-vote_dat <- content(x=resp, as = 'text') %>% 
-  read_html() %>% 
-  html_node(css = 'table') %>% 
-  html_table(fill = TRUE)
-
-Sys.setlocale("LC_ALL", "Korean")
-
-
-```
-
 
 # 크롤링 사전 {#crawling-dictionary}
 
@@ -168,8 +131,76 @@ Sys.setlocale("LC_ALL", "Korean")
    11, "교육감선거",
    10, "교육의원선거"
 )
+```
+
+
+# [중앙선관위 선계통계시스템](http://info.nec.go.kr/) {#nec-stat}
+
+[중앙선거관리위원회 선계통계시스템](http://info.nec.go.kr/)의 자료제공방식은 동일한 URL에서 방식이 수차례 변경되었다. 가장 최근 방식에서 데이터를 엑셀 대신에 가져오는 방식은 웹인터페이스를 통해서 `httr` 팩키지 `POST` 방식을 통해 가져오는 것이다. 즉, `POST` 방식을 통해 가져올 데이터 조건을 전달하고 이를 웹에 테이블 형태 표데이터로 나타나게 되면 이를 `rvest` 팩키지를 통해서 데이터를 가져온다.
+
+<img src="fig/info_nec_post_method.png" alt="선관위 선거통계시스템 POST" width="100%" />
+
+## 대통령선거 {#nec-stat-presidential}
+
+
+### 서울특별시 {#nec-stat-presidential-seoul}
+
+가장 먼저 `POST`를 조건을 던져서 데이터를 [중앙선관위 선계통계시스템](http://info.nec.go.kr/)에서 데이터를 가져올 수 있는지 테스트 한다.
+
+
+```{r nec-stat-presidential-seoul}
+# 0. 환경설정 -----
+library(tidyverse)
+library(rvest)
+library(httr)
+
+# 1. 데이터 받아오기 -----
+## 1.1 POST() 함수를 사용하여 개표 결과를 수집합니다.
+resp <- POST(
+    url = 'http://info.nec.go.kr/electioninfo/electionInfo_report.xhtml',
+    encode = 'form', 
+    body = list(
+       electionId = "0000000000",
+       requestURI = "/WEB-INF/jsp/electioninfo/0000000000/vc/vccp09.jsp",
+       topMenuId = "VC",
+       secondMenuId = "VCCP09",
+       menuId = "VCCP09",
+       statementId = "VCCP09_#1",
+       oldElectionType = "1",
+       electionType = "1",
+       electionName = "20170509",
+       electionCode = "1",
+       cityCode = "1100",
+       townCode = "-1",
+       sggCityCode = "-1",
+       x = "24",
+       y = "12"
+    )
+  )
+
+Sys.setlocale("LC_ALL", "C")
+
+## Wireshark 데이터 가져오기
+table_body <- content(x=resp, as = 'text') %>% 
+  read_html() %>% 
+  html_node(xpath = '//*[@id="table01"]') %>% 
+  html_table(fill=TRUE)
+
+table_header <- content(x=resp, as = 'text') %>% 
+  read_html() %>% 
+  html_node(xpath = '//*[@id="table01"]') %>% 
+  html_text()
+
+Sys.setlocale("LC_ALL", "Korean")
+
+table_list <- str_split(table_header, "\n") %>% unlist
+table_list[str_detect(table_list, "민주")]
+
+DT::datatable(table_body)
 
 ```
+
+
 
 
 

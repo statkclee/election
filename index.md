@@ -27,9 +27,10 @@ title: 대한민국 제21대 국회의원 선거
     - [대선, 총선, 지선](by_election_major_election.html) 작업중
     - [창원시 성산구](by_election_precinct_changwon.html)    
     - [보궐선거구](by_election_precinct.html)
-- 직업
+- 직업과 세금
     - [한국 고용 직업분류](election_job_classification.html)
     - [탐색적 직업 데이터 분석](election_job_EDA.html)
+    - [국세 세금 데이터 분석](election_tax_EDA.html)
 - 기타
     - [구글 일정](election-google-calendar.html)
     

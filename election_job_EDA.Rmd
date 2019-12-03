@@ -138,11 +138,3 @@ collapsibleTree(
 ```
 
 
-# 직장인 지갑만 털었다 [^choi-edaily] [^tax-white-paper] {#salaryman-wallet}
-
-
-[^choi-edaily]: [최훈길 기자 (2019-12-03), "직장인 지갑만 털었다…근로소득세 10년새 2.5배", 이데일리](https://www.edaily.co.kr/news/read?newsId=01377606622714912&mediaCodeNo=257)
-
-[^tax-white-paper]: [국세청 &rarr; 국세통계 &rarr; 통계자료실](https://stats.nts.go.kr/data/data.asp)
-
-![세금과 직업](fig/edaily-tax.jpg)

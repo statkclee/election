@@ -1,0 +1,222 @@
+---
+layout: page
+title: "대한민국 제21대 국회의원 선거"
+subtitle: "여론조사기관: 2020-03-20"
+author:
+    name: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: hide
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+
+```
+
+# 여론조사기관 {#election-polling-company}
+
+중앙선거관리위원회 &rarr; 중앙선거여론조사심의위원회 &rarr; 알림마당 &rarr; [여론조사기관등록현황](https://www.nesdc.go.kr/portal/content/onvy/list.do)에 보면 `r Sys.Date()` 시점 기준 "기관등록 현황"과 "기관등록 취소현황"을 파악할 수 있다.
+
+```{r polls-get-data}
+# 0. 환경설정 -----
+library(tidyverse)
+library(rvest)
+library(httr)
+library(glue)
+
+Sys.setlocale("LC_ALL", "C")
+
+first_url <- "https://www.nesdc.go.kr/portal/content/onvy/list.do"
+
+first_html <- first_url %>% 
+  read_html()
+
+Sys.setlocale("LC_ALL", "Korean")
+
+## 전화번호
+전화번호 <- first_html %>% 
+  html_nodes(xpath='//*[@id="frm"]/div[3]/div') %>% 
+  xml_children() %>% 
+  xml_find_all("//span[@class='col ws']") %>% 
+  xml_text %>% 
+  str_extract_all("([0-9]{2,3}-)?[0-9]{3,4}-[0-9]{3,4}", simplify =TRUE)
+
+전화번호 <- 전화번호[전화번호!=""]
+
+## 등록일자
+등록일자 <- first_html %>% 
+  html_nodes(xpath='//*[@id="frm"]/div[3]/div') %>% 
+  xml_children() %>% 
+  xml_find_all("//span[@class='col ws']") %>% 
+  xml_text %>% 
+  str_extract_all("[0-9]{4}-[0-9]{2}-[0-9]{2}", simplify =TRUE)
+
+등록일자 <- 등록일자[등록일자!=""]
+
+```
+
+## 등록현황 {polling-company-overview}
+
+### 첫번째 페이지 {#polling-company-overview-first}
+
+```{r company-overview-first}
+
+link_list <- first_html %>% 
+  html_nodes(xpath='//*[@id="frm"]/div[3]/div') %>% 
+  xml_children() %>% 
+  xml_attrs("row tr")
+
+link_df <- map(link_list, "href") %>% enframe %>% 
+  mutate(type = map_lgl(value, is.null)) %>% 
+  filter(!type) %>% 
+  unnest(value) %>% 
+  mutate(link = glue("https://www.nesdc.go.kr{value}")) %>% 
+  select(link)
+
+convert_df <- function(link) {
+
+  Sys.setlocale("LC_ALL", "C")
+  
+  link_df <- link %>% 
+    read_html() %>% 
+    html_node(xpath = '/html/body/section/div/div/div[1]/table') %>% 
+    html_table(fill = TRUE) %>% 
+    spread(X1, X2)
+  
+  Sys.setlocale("LC_ALL", "Korean")
+  
+  return(link_df)
+}
+
+company_df <- map_df(link_df$link, convert_df)
+
+company_df %>% 
+  DT::datatable()
+```
+
+### 전체회사 페이지 {#polling-company-overview-page}
+
+```{r company-overview-page}
+nesdc_page <- list()
+
+for(page_index in 1:9) {
+  element_name <- glue("link_{page_index}")
+  nesdc_page[[element_name]] <- glue("https://www.nesdc.go.kr/portal/content/onvy/list.do?&sdate=&edate=&searchVO=egovframework.rte.nesdc.bbs.vo.SearchVO@386025ce[sdate=,edate=,xdate=,searchTime=,searchCnd=,searchWrd=,pageIndex=1,pageUnit=10,pageSize=10,firstIndex=0,lastIndex=10,recordCountPerPage=10,rowNo=0,bbsNm=,delCode=0,orgTableNm=,tableNm=,orgPath=,newPath=,atchFileId=,orgFileNm=,fileSn=0,fileNm=,totalRows=0,totalCnt=0,siteName=,currentSize=0,totCnt=0,userIp=,siteId=,programId=,targetMethod=,pageQueryString=%3Cnull%3E,menuNo=%3Cnull%3E,imgUrl=,publish=,useAt=Y,saveType=,userId=,telecomCd=,pollGubuncd=,usePurpose=]&searchWrd=&searchCnd=&pageIndex={page_index}")
+}
+
+nesdc_page %>% 
+  enframe() %>% 
+  mutate(link = map_chr(value, as.character)) %>% 
+  mutate()
+```
+
+### 전체회사 링크 {#polling-company-overview-링크}
+
+```{r company-overview-page-link}
+
+company_url_list <- list()
+
+for(i in 1:9){
+  
+  page_list <- nesdc_page[[i]] %>% 
+  read_html() %>% 
+  html_nodes(xpath='//*[@id="frm"]/div[3]/div') %>% 
+  xml_children() %>% 
+  xml_attrs("row tr")
+
+  line_df <- map(page_list, "href") %>% enframe %>% 
+    mutate(type = map_lgl(value, is.null)) %>% 
+    filter(!type) %>% 
+    unnest(value) %>% 
+    mutate(link = glue("https://www.nesdc.go.kr{value}")) %>% 
+    select(link)
+  
+  company_url_list[[i]] <- line_df
+}
+
+## 각 회사별 URL
+company_url_chr <- company_url_list %>% unlist
+
+## 각 회사별 상세정보
+company_df <- map_df(company_url_chr, convert_df) %>% 
+  as_tibble() %>% 
+  mutate(등록일자 = lubridate::ymd(등록일자))
+
+company_df %>% 
+  write_rds("data/company_df.rds")
+```
+
+
+# 여론조사기관 {#polling-company-data}
+
+## 등록업체 {#polling-company-detail}
+
+```{r polling-company}
+company_df %>% 
+  DT::datatable()
+```
+
+## 등록추세 {#polling-company-data-timeseries}
+
+```{r polling-company-trend}
+reg_df <- company_df %>% 
+  count(등록일자, name="업체수") %>% 
+  mutate(연월 = format(등록일자, "%Y-%m")) %>% 
+  group_by(연월) %>% 
+  summarise(업체수 = sum(업체수)) %>% 
+  ungroup() %>% 
+  mutate(연월 = lubridate::ymd(glue("{연월}-15")))
+
+registration_g <- reg_df %>% 
+  ggplot(aes(x=연월, y=업체수)) +
+    geom_point() +
+    geom_line() +
+    geom_vline(xintercept = lubridate::ymd("2017-05-09"), color="blue", linetype="dashed") +
+    geom_vline(xintercept = lubridate::ymd("2018-06-13"), color="blue", linetype="dashed") +
+    geom_vline(xintercept = lubridate::ymd("2020-04-15"), color="blue", linetype="dashed") +
+    theme_bw() +
+    labs(x="", y="여론조사기관 등록업체수", title="중앙선거여론조사심의위원회 등록업체현황") +
+    geom_curve(aes(x = lubridate::ymd("2018-06-13"), y = 5, xend = lubridate::ymd("2018-09-13"), yend = 10),
+             curvature = 0.35, angle = 50, size=1, color ="blue", arrow = arrow(type = "closed", length = unit(0.35,"cm"))) +
+    annotate("label", x=lubridate::ymd("2018-09-13"), y=11, label="지방선거") +
+    geom_curve(aes(x = lubridate::ymd("2017-05-09"), y = 5, xend = lubridate::ymd("2017-09-09"), yend = 20),
+             curvature = 0.35, angle = 50, size=1, color ="blue", arrow = arrow(type = "closed", length = unit(0.35,"cm"))) +
+    annotate("label", x=lubridate::ymd("2017-09-09"), y=21, label="대통령 선거") +
+    geom_curve(aes(x = lubridate::ymd("2020-04-15"), y = 5, xend = lubridate::ymd("2019-12-09"), yend = 15),
+           curvature = -0.35, angle = 50, size=1, color ="blue", arrow = arrow(type = "closed", length = unit(0.35,"cm"))) +
+    annotate("label", x=lubridate::ymd("2019-12-09"), y=16, label="국회의원 선거")
+
+registration_g
+```
+
+
+```{r polling-company-trend-interactive}
+
+reg_plotly_g <- company_df %>% 
+  mutate(연월 = format(등록일자, "%Y-%m")) %>% 
+  group_by(연월) %>% 
+  summarise(업체수 = n(),
+            조사기관명 = glue_collapse(조사기관명, sep="\n")) %>% 
+  mutate(연월 = lubridate::ymd(glue("{연월}-15"))) %>% 
+  ggplot(aes(x=연월, y=업체수, text=조사기관명, group=1)) +
+    geom_point() +
+    geom_line() +
+    geom_vline(xintercept = lubridate::ymd("2017-05-09"), color="blue", linetype="dashed") +
+    geom_vline(xintercept = lubridate::ymd("2018-06-13"), color="blue", linetype="dashed") +
+    geom_vline(xintercept = lubridate::ymd("2020-04-15"), color="blue", linetype="dashed") +
+    theme_bw() +
+    labs(x="", y="여론조사기관 등록업체수", title="중앙선거여론조사심의위원회 등록업체현황")  
+
+plotly::ggplotly(reg_plotly_g, tooltip="text")
+```
+

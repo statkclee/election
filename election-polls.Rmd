@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 
 # 여론조사 데이터 {#election-polls}
 
-```{r polls-get-data}
+```{r polls-get-data, eval = FALSE}
 # 0. 환경설정 -----
 library(tidyverse)
 library(rvest)
@@ -50,6 +50,15 @@ Sys.setlocale("LC_ALL", "Korean")
   janitor::clean_names() %>% 
   slice(2:n()) %>% 
   gather(key, value)
+
+```
+
+
+# 제21대 총선 선거구 {#election-polls-area}
+
+[2020년 21대 국회의원 총선거 지도](https://github.com/OhmyNews/2020_21_elec_map)는 VW Lab 김승범 소장님 [대한민국 행정동 경계 파일](https://github.com/vuski/admdongkor)을 기반으로 하여 오마이뉴스에서 제작한 지도입니다.
+
+```{r polls-get-data-map}
 
 ```
 

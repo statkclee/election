@@ -23,42 +23,129 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 
 ```
 
-# 여론조사 데이터 {#election-polls}
-
-```{r polls-get-data, eval = FALSE}
-# 0. 환경설정 -----
-library(tidyverse)
-library(rvest)
-library(httr)
-
-polls_url <- "https://namu.wiki/w/%EC%A0%9C21%EB%8C%80%20%EA%B5%AD%ED%9A%8C%EC%9D%98%EC%9B%90%20%EC%84%A0%EA%B1%B0/%EC%97%AC%EB%A1%A0%EC%A1%B0%EC%82%AC"
-
-Sys.setlocale("LC_ALL", "C")
-
-polls_dat <- polls_url %>% 
-  read_html() %>% 
-  html_nodes(css="table") %>% 
-  html_table(fill=TRUE)
-
-Sys.setlocale("LC_ALL", "Korean")
-
-리서치뷰_lgl <- map_lgl(map(polls_dat, str_detect, "리서치뷰 "), any)
-
-리서치뷰_lst <- polls_dat[리서치뷰_lgl]
-
-리서치뷰_lst[[1]] %>% 
-  janitor::clean_names() %>% 
-  slice(2:n()) %>% 
-  gather(key, value)
-
-```
-
-
 # 제21대 총선 선거구 {#election-polls-area}
 
 [2020년 21대 국회의원 총선거 지도](https://github.com/OhmyNews/2020_21_elec_map)는 VW Lab 김승범 소장님 [대한민국 행정동 경계 파일](https://github.com/vuski/admdongkor)을 기반으로 하여 오마이뉴스에서 제작한 지도입니다.
 
 ```{r polls-get-data-map}
+library(tidyverse)
+library(sf)
+
+precinct <- st_read("data/2020_21_elec_map/2020_21_elec_253_simple.json")
+
+precinct %>% 
+  filter(str_detect(SGG_1, "경기")) %>% 
+  select(geometry) %>% 
+  plot()
+```
+
+# 여론조사 데이터 {#election-polls}
+
+[나무위키 제21대 국회의원선거 여론조사](https://namu.wiki/w/제21대 국회의원 선거/여론조사) 웹사이트에서 여론조사 결과를 가져온다.
+
+```{r polls-get-data, eval = TRUE}
+# 0. 환경설정 -----
+library(tidyverse)
+library(rvest)
+library(httr)
+
+polls_html <- read_html("https://namu.wiki/w/제21대 국회의원 선거/여론조사")
+```
+
+## 여론조사 1개 변환 {#election-polls-one}
+
+특정 여론조사업체 한 곳("아이소프트뱅크")을 대상으로 여론조사 지지율을 변환시킨다.
+
+```{r polls-get-data-one, eval = TRUE}
+## 여론조사업체만 추출함
+polls_wiki <- polls_html %>% 
+  html_nodes('.wiki-table')
+
+# polling_company <- "입소스|한국사회여론연구소|리얼미터|조원씨앤아이|한국리서치|알앤써치|한길리서치센타|글로벌리서치|아이소프트뱅크"
+
+polling_company <- "아이소프트뱅크"
+
+polling_lgl <- polls_html %>% 
+  html_nodes(".wiki-table") %>% 
+  str_detect(polling_company)
+
+polls_tbl <- polls_wiki[polling_lgl] 
+
+polls_lst <- map(polls_tbl, html_table, fill=TRUE)
+
+### 데이터 정규화
+#### 여론조사일
+date <- polls_lst[[1]] %>% 
+  select(X1) %>% 
+  pull() %>% 
+  str_extract("[0-9]{4}년\\s*[0-9]{1,2}월\\s*[0-9]{1,2}~?.*일") %>% 
+  na.omit(.)
+
+#### 조사기관
+company <- polls_lst[[1]] %>% 
+  select(X1) %>% 
+  pull() %>% 
+  str_extract(polling_company) %>% 
+  na.omit(.)
+
+#### 여론지지율
+정당 <- polls_lst[[1]] %>% slice(2) %>% t()
+후보 <- polls_lst[[1]] %>% slice(3)  %>% t()
+지지율 <- polls_lst[[1]] %>% slice(4)  %>% t()
+
+survey_tbl <- data.frame(정당 = 정당,
+                       후보 = 후보,
+                       지지율 = 지지율)
+
+tibble(조사일 = date, 조사기관=company, 조사결과=survey_tbl)
 
 ```
 
+## 여론조사 변환 함수 {#election-polls-function}
+
+이를 함수화하여 여론조사 결과를 데이터프레임으로 변환시키는 작업을 수행한다.
+
+```{r polls-get-data-function, eval = TRUE}
+
+convert_df <- function(i) {
+  #### 여론조사일
+  date <- polls_lst[[i]] %>% 
+    select(X1) %>% 
+    pull() %>% 
+    str_extract("[0-9]{4}년\\s*[0-9]{1,2}월\\s*[0-9]{1,2}~?.*일") %>% 
+    na.omit(.)
+
+  #### 조사기관
+  company <- polls_lst[[i]] %>% 
+    select(X1) %>% 
+    pull() %>% 
+    str_extract(polling_company) %>% 
+    na.omit(.)
+  
+  #### 여론지지율
+  정당 <- polls_lst[[i]] %>% slice(2) %>% t()
+  후보 <- polls_lst[[i]] %>% slice(3)  %>% t()
+  지지율 <- polls_lst[[i]] %>% slice(4)  %>% t()
+  
+  survey_tbl <- data.frame(정당 = 정당,
+                         후보 = 후보,
+                         지지율 = 지지율)
+  
+  return(tibble(조사일 = date, 조사기관=company, 조사결과=survey_tbl))
+}
+
+convert_df(2)
+```
+
+
+## 여론조사 변환 반복 {#election-polls-loop}
+
+마지막으로 모든 여론조사결과를 데이터프레임으로 변환시키는 작업을 수행한다.
+
+```{r polls-get-data-loop, eval = TRUE}
+wanna_lst <- map(1:length(polls_lst), convert_df)
+
+wanna_lst %>% 
+  listviewer::jsonedit()
+
+```

@@ -3,7 +3,11 @@ layout: page
 title: 대한민국 제21대 국회의원 선거
 ---
 
-- [대통령 지지율](president_approval_survey.html)
+- **지지율**
+    - [대통령 지지율](president_approval_survey.html)
+    - [정당 지지율](party_approval_survey.html)
+- [여론조사](election-polls.html)
+    - [여론조사기관: 2020-03-20](election-poll-company.html)
 - [세대별 미디어](election_media.html)
     - [온라인 환경 변화](election_online.html)
 - 정치/경제/인구
@@ -34,6 +38,4 @@ title: 대한민국 제21대 국회의원 선거
 - 기타
     - [구글 일정](election-google-calendar.html)
 - [총선 선거구(precinct): 19~21대](precinct-2016.html)
-- [여론조사](election-polls.html)
-    - [여론조사기관: 2020-03-20](election-poll-company.html)
     

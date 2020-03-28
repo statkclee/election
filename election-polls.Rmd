@@ -21,152 +21,7 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
                       comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 
-```
-
-# 제21대 총선 선거구 {#election-polls-area}
-
-[2020년 21대 국회의원 총선거 지도](https://github.com/OhmyNews/2020_21_elec_map)는 VW Lab 김승범 소장님 [대한민국 행정동 경계 파일](https://github.com/vuski/admdongkor)을 기반으로 하여 오마이뉴스에서 제작한 지도입니다.
-
-```{r polls-get-data-map, eval = TRUE}
-library(tidyverse)
-library(sf)
-
-precinct <- st_read("data/shapefile/2020_21_elec_253_simple.json")
-
-precinct %>% 
-  filter(str_detect(SGG_1, "경기")) %>% 
-  select(geometry) %>% 
-  plot()
-```
-
-# 여론조사 데이터 {#election-polls}
-
-[나무위키 제21대 국회의원선거 여론조사](https://namu.wiki/w/제21대 국회의원 선거/여론조사) 웹사이트에서 여론조사 결과를 가져온다.
-
-```{r polls-get-data, eval = TRUE}
-# 0. 환경설정 -----
-library(tidyverse)
-library(rvest)
-library(httr)
-
-polls_html <- read_html("https://namu.wiki/w/제21대 국회의원 선거/여론조사")
-```
-
-## 여론조사 1개 변환 {#election-polls-one}
-
-특정 여론조사업체 한 곳("아이소프트뱅크")을 대상으로 여론조사 지지율을 변환시킨다.
-
-```{r polls-get-data-one, eval = FALSE}
-## 여론조사업체만 추출함
-polls_wiki <- polls_html %>% 
-  html_nodes('.wiki-table')
-
-# polling_company <- "입소스|한국사회여론연구소|리얼미터|조원씨앤아이|한국리서치|알앤써치|한길리서치센타|글로벌리서치|아이소프트뱅크"
-
-polling_company <- "아이소프트뱅크"
-
-polling_lgl <- polls_html %>% 
-  html_nodes(".wiki-table") %>% 
-  str_detect(polling_company)
-
-polls_tbl <- polls_wiki[polling_lgl] 
-
-polls_lst <- map(polls_tbl, html_table, fill=TRUE)
-
-### 데이터 정규화
-#### 여론조사일
-date <- polls_lst[[1]] %>% 
-  select(X1) %>% 
-  pull() %>% 
-  str_extract("[0-9]{4}년\\s*[0-9]{1,2}월\\s*[0-9]{1,2}~?.*일") %>% 
-  na.omit(.)
-
-#### 조사기관
-company <- polls_lst[[1]] %>% 
-  select(X1) %>% 
-  pull() %>% 
-  str_extract(polling_company) %>% 
-  na.omit(.)
-
-#### 여론지지율
-정당 <- polls_lst[[1]] %>% slice(2) %>% t()
-후보 <- polls_lst[[1]] %>% slice(3)  %>% t()
-지지율 <- polls_lst[[1]] %>% slice(4)  %>% t()
-
-survey_tbl <- data.frame(정당 = 정당,
-                       후보 = 후보,
-                       지지율 = 지지율)
-
-tibble(조사일 = date, 조사기관=company, 조사결과=survey_tbl)
-
-```
-
-## 여론조사 변환 함수 {#election-polls-function}
-
-이를 함수화하여 여론조사 결과를 데이터프레임으로 변환시키는 작업을 수행한다.
-
-```{r polls-get-data-function, eval = FALSE}
-
-convert_df <- function(i) {
-  #### 여론조사일
-  date <- polls_lst[[i]] %>% 
-    select(X1) %>% 
-    pull() %>% 
-    str_extract("[0-9]{4}년\\s*[0-9]{1,2}월\\s*[0-9]{1,2}~?.*일") %>% 
-    na.omit(.)
-
-  #### 조사기관
-  company <- polls_lst[[i]] %>% 
-    select(X1) %>% 
-    pull() %>% 
-    str_extract(polling_company) %>% 
-    na.omit(.)
-  
-  #### 여론지지율
-  정당 <- polls_lst[[i]] %>% slice(2) %>% t()
-  후보 <- polls_lst[[i]] %>% slice(3)  %>% t()
-  지지율 <- polls_lst[[i]] %>% slice(4)  %>% t()
-  
-  survey_tbl <- data.frame(정당 = 정당,
-                         후보 = 후보,
-                         지지율 = 지지율)
-  
-  return(tibble(조사일 = date, 조사기관=company, 조사결과=survey_tbl))
-}
-
-convert_df(2)
-```
-
-
-## 여론조사 변환 반복 {#election-polls-loop}
-
-마지막으로 모든 여론조사결과를 데이터프레임으로 변환시키는 작업을 수행한다.
-
-```{r polls-get-data-loop, eval = FALSE}
-wanna_lst <- map(1:length(polls_lst), convert_df)
-
-wanna_lst %>% 
-  listviewer::jsonedit()
-
-```
-
-# 새방식 {#election-polls-new}
-
-## 여론조사 1개 변환 {#election-polls-one}
-
-
-```{r polls-get-data-html}
-Sys.setlocale("LC_ALL", "C")
-
-polls_dat <- polls_html %>% 
-  html_nodes('table') %>% 
-  .[55] %>% 
-  html_table(fill=TRUE) %>% 
-  .[[1]]
-
-Sys.setlocale("LC_ALL", "Korean")
-
-polls_dat
+Sys.setlocale("LC_ALL","ko_KR.UTF-8")
 ```
 
 
@@ -178,6 +33,9 @@ polls_dat
 [알림마당 &rarr; 여론조사결과 현황](https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467)에 담긴 여론조사결과 현황을 긁어와서 분석한다.
 
 ```{r get-data-screen-shot}
+Sys.setlocale("LC_ALL","ko_KR.UTF-8")
+
+library(tidyverse)
 library(webshot2)
 
 webshot("https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467", "fig/nesdc.png")
@@ -189,9 +47,11 @@ webshot("https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467", "fi
 
 [알림마당 &rarr; 여론조사결과 현황](https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467)의 첫번째 현황만 가져와서 데이터프레임으로 변환시킨다.
 
-```{r get-data-one-page}
+```{r get-data-one-page, eval=FALSE}
 library(tidyverse)
 library(rvest)
+
+Sys.setlocale("LC_ALL","ko_KR.UTF-8")
 
 nesdc_html <- read_html("https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467")
 
@@ -210,7 +70,7 @@ nesdc_dat <- nesdc_txt %>%
 nesdc_df <- nesdc_dat %>% 
   set_names(nesdc_dat[1,]) %>% 
   slice(2:n()) %>% 
-  select(-`1`, -결정사항)
+  select(등록번호, 조사기관명, 조사의뢰자, `여론조사 명칭`, 등록일, 지역)
 
 nesdc_df %>% 
   DT::datatable()
@@ -222,8 +82,7 @@ nesdc_df %>%
 
 `https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467&pageIndex=2"` 와 같이 `&pageIndex=2`만 조정하게 되면 다른 페이지를 가져올 수 있는 것이 확인되었다.
 
-```{r get-data-two}
-
+```{r get-data-two, eval=FALSE}
 nesdc_html <- read_html("https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467&pageIndex=2")
 
 nesdc_txt <- nesdc_html %>% 
@@ -250,7 +109,7 @@ nesdc_df
 
 `https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467&pageIndex=2"` 와 같이 `&pageIndex=2`만 조정하게 되면 다른 페이지를 가져올 수 있는 것이 확인되었기 때문에 함수를 만들어서 이를 테스트 한다.
 
-```{r get-data-two}
+```{r get-data-two-function, eval=FALSE}
 
 get_survey_page <- function(page) {
   
@@ -295,7 +154,7 @@ nesdc_full_df %>%
   write_rds("data/nesdc_full_df.rds")
 
 nesdc_full_df %>% 
-  write_rds("data/nesdc_full_df.csv")
+  write_csv("data/nesdc_full_df.csv")
 ```
 
 최근 500건의 데이터를 긁어와서 이를 분석하는데 `2020-01-01` 부터 분석이 되도록 데이터를 정리한다.
@@ -305,8 +164,8 @@ nesdc_full_df %>%
 nesdc_full_df <- read_csv("data/nesdc_full_df.csv")
 
 nesdc_eda_df <- nesdc_full_df %>% 
-  mutate(등록일 = lubridate::ymd(등록일)) %>% 
-  filter(등록일 >= as.Date("2020-01-01")) %>% 
+  mutate(`등록일` = lubridate::ymd(`등록일`)) %>% 
+  filter(`등록일` >= as.Date("2020-01-01")) %>% 
   mutate_if(is.character, factor)
 ```
 
@@ -321,14 +180,36 @@ nesdc_eda_df %>%
   skimr::skim(.)
 ```
 
+## 데이터프레임 {#election-polls-EDA-df}
+
+`dfSummary()` 함수를 사용해서 전체 데이터프레임에 담긴 정보를 개괄적으로 파악한다.
+
+```{r election-polls-EDA-df}
+library(summarytools)
+st_options(plain.ascii = FALSE)
+print(dfSummary(nesdc_eda_df, graph.magnif = 0.75), method = 'render')
+```
 
 ## 단변량 분석 {#election-polls-EDA-univariate}
 
 각 변수별로 특성을 살펴본다. 
 
-```{r election-polls-EDA-univariate}
-library(summarytools)
-dfSummary(nesdc_eda_df, style = 'grid', graph.magnif = 0.75, 
-          valid.col = FALSE, tmp.img.dir = "/tmp")
+```{r election-polls-EDA-univariate-조사기관명, results = "asis"}
+nesdc_eda_df %>% 
+  freq(`조사기관명`, style = 'rmarkdown')
 ```
 
+```{r election-polls-EDA-univariate-조사의뢰자, results = "asis"}
+조사의뢰자_v <- nesdc_eda_df %>% 
+  count(`조사의뢰자`, sort=TRUE) %>% 
+  pull(`조사의뢰자`)
+
+nesdc_eda_df %>% 
+  mutate(조사의뢰자 = factor(조사의뢰자, levels=조사의뢰자_v)) %>% 
+  freq(`조사의뢰자`, style = 'rmarkdown')
+```
+
+```{r election-polls-EDA-univariate-지역, results = "asis"}
+nesdc_eda_df %>% 
+  freq(`지역`, style = 'rmarkdown')
+```

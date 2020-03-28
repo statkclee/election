@@ -293,12 +293,16 @@ nesdc_full_df <-  map_df(page_index, get_survey_page)
 
 nesdc_full_df %>% 
   write_rds("data/nesdc_full_df.rds")
+
+nesdc_full_df %>% 
+  write_rds("data/nesdc_full_df.csv")
 ```
 
 최근 500건의 데이터를 긁어와서 이를 분석하는데 `2020-01-01` 부터 분석이 되도록 데이터를 정리한다.
 
 ```{r get-data-fulldata-eval, eval = TRUE}
-nesdc_full_df <- read_rds("data/nesdc_full_df.rds")
+# nesdc_full_df <- read_rds("data/nesdc_full_df.rds")
+nesdc_full_df <- read_csv("data/nesdc_full_df.csv")
 
 nesdc_eda_df <- nesdc_full_df %>% 
   mutate(등록일 = lubridate::ymd(등록일)) %>% 
@@ -320,8 +324,7 @@ nesdc_eda_df %>%
 
 ## 단변량 분석 {#election-polls-EDA-univariate}
 
-각 변수별로 특성을 살펴본다.
-
+각 변수별로 특성을 살펴본다. 
 
 ```{r election-polls-EDA-univariate}
 library(summarytools)

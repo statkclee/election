@@ -3,7 +3,7 @@ layout: page
 title: "재보선 2019 선거"
 subtitle: "각종 여론조사"
 author:
-    name: xwMOOC
+    name: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
 date: "`r Sys.Date()`"
 output:
   html_document: 
@@ -18,12 +18,14 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE,
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
                       comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 
 ```
 
 # 대통령 지지율 {#president-approval}
+
+대통령 지지율 여론조사데이터는 [위키백과: 대한민국의 대통령 지지율](https://ko.wikipedia.org/wiki/대한민국의_대통령_지지율)과  [나무위키, 문재인/지지율](https://namu.wiki/w/%EB%AC%B8%EC%9E%AC%EC%9D%B8/%EC%A7%80%EC%A7%80%EC%9C%A8)에 데이터가 잘 정리되어 있다. 처음 [위키백과: 대한민국의 대통령 지지율](https://ko.wikipedia.org/wiki/대한민국의_대통령_지지율)를 통해 대통령 지지율을 작업했지만, 나무위키 문재인/지지율 데이터가 더 좋은 자료구조로 충실히 정리되어 있다.
 
 - 데이터 출처: [위키백과: 대한민국의 대통령 지지율](https://ko.wikipedia.org/wiki/대한민국의_대통령_지지율)
 - 조사기관
@@ -43,14 +45,15 @@ library(lubridate)
 
 namu_url <- "https://ko.wikipedia.org/wiki/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%EC%9D%98_%EB%8C%80%ED%86%B5%EB%A0%B9_%EC%A7%80%EC%A7%80%EC%9C%A8"
 
-# Sys.setlocale("LC_ALL", "C")
+Sys.setlocale("LC_ALL", "C")
 
 moon_dat <- namu_url %>% 
   read_html() %>% 
-  html_nodes(xpath='//*[@id="mw-content-text"]/div/table') %>%
+  html_nodes(xpath='//*[@id="mw-content-text"]/div/table[1]') %>%
   html_table(fill=TRUE) %>% 
   .[[1]]
-# Sys.setlocale("LC_ALL", "Korean")
+
+Sys.setlocale("LC_ALL", "Korean")
 
 moon_part_one_df <- moon_dat %>%
   set_names(c("날짜1", "갤럽1", "리얼미터1", "날짜2", "갤럽2", "리얼미터2", "날짜3", "갤럽3", "리얼미터3")) %>% 
@@ -65,6 +68,7 @@ moon_part_one_df <- moon_dat %>%
 
 moon_part_two_df <- moon_dat %>%
   set_names(c("날짜1", "갤럽1", "리얼미터1", "날짜2", "갤럽2", "리얼미터2", "날짜3", "갤럽3", "리얼미터3")) %>% 
+  select(`날짜2`, `갤럽2`, `리얼미터2`) %>% 
   filter(row_number() >=3) %>% 
     rename(`날짜` = `날짜2`,
            `갤럽` = `갤럽2`,
@@ -74,7 +78,20 @@ moon_part_two_df <- moon_dat %>%
   mutate(`리얼미터` = str_extract(`리얼미터`, "^\\d.+\\.\\d") %>% as.numeric) %>% 
   filter(!str_detect(`날짜`, "NA"))
 
-moon_dat <- bind_rows(moon_part_one_df, moon_part_two_df) %>% 
+moon_part_three_df <- moon_dat %>%
+  set_names(c("날짜1", "갤럽1", "리얼미터1", "날짜2", "갤럽2", "리얼미터2", "날짜3", "갤럽3", "리얼미터3")) %>% 
+  select(`날짜3`, `갤럽3`, `리얼미터3`) %>% 
+  filter(row_number() >=3) %>% 
+    rename(`날짜` = `날짜3`,
+           `갤럽` = `갤럽3`,
+           `리얼미터` = `리얼미터3`) %>% 
+  filter(! row_number() %in% c(1,2,3)) %>% 
+  mutate(`갤럽` = str_extract(`갤럽`, "^\\d.+\\.\\d") %>% as.numeric) %>% 
+  mutate(`리얼미터` = str_extract(`리얼미터`, "^\\d.+\\.\\d") %>% as.numeric) %>% 
+  filter(!str_detect(`날짜`, "NA"))
+
+moon_dat <- bind_rows(moon_part_one_df, moon_part_two_df) %>%
+  bind_rows(moon_part_three_df) %>% 
   tbl_df
 
 moon_dat <- moon_dat %>% 
@@ -140,7 +157,7 @@ moon_df %>%
 대통령 취임 전체 시점과 더불어 2019년부터 가장 최근 시점 조사 일자까지 두 조사기관 지지율 추이를 시각화한다.
 
 ```{r 대통령_지지율-데이터-zoom}
-moon_df %>% 
+moon_g <- moon_df %>% 
   select(-`날짜`) %>% 
   gather(`조사기관`, `지지율`, -`조사날짜`) %>% 
   ggplot(aes(x=`조사날짜`, y=`지지율`, color=`조사기관`)) +
@@ -152,4 +169,6 @@ moon_df %>%
     labs(x="", y="지지율(%)", title="문재인 대통령 지지율") +
     theme(legend.position = "top") +
     coord_cartesian(xlim = c(lubridate::ymd("2019-01-01"), Sys.Date()))
+
+plotly::ggplotly(moon_g)
 ```

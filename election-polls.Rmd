@@ -27,11 +27,11 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 
 [2020년 21대 국회의원 총선거 지도](https://github.com/OhmyNews/2020_21_elec_map)는 VW Lab 김승범 소장님 [대한민국 행정동 경계 파일](https://github.com/vuski/admdongkor)을 기반으로 하여 오마이뉴스에서 제작한 지도입니다.
 
-```{r polls-get-data-map}
+```{r polls-get-data-map, eval = TRUE}
 library(tidyverse)
 library(sf)
 
-precinct <- st_read("data/2020_21_elec_map/2020_21_elec_253_simple.json")
+precinct <- st_read("data/shapefile/2020_21_elec_253_simple.json")
 
 precinct %>% 
   filter(str_detect(SGG_1, "경기")) %>% 
@@ -56,7 +56,7 @@ polls_html <- read_html("https://namu.wiki/w/제21대 국회의원 선거/여론
 
 특정 여론조사업체 한 곳("아이소프트뱅크")을 대상으로 여론조사 지지율을 변환시킨다.
 
-```{r polls-get-data-one, eval = TRUE}
+```{r polls-get-data-one, eval = FALSE}
 ## 여론조사업체만 추출함
 polls_wiki <- polls_html %>% 
   html_nodes('.wiki-table')
@@ -105,7 +105,7 @@ tibble(조사일 = date, 조사기관=company, 조사결과=survey_tbl)
 
 이를 함수화하여 여론조사 결과를 데이터프레임으로 변환시키는 작업을 수행한다.
 
-```{r polls-get-data-function, eval = TRUE}
+```{r polls-get-data-function, eval = FALSE}
 
 convert_df <- function(i) {
   #### 여론조사일
@@ -142,10 +142,68 @@ convert_df(2)
 
 마지막으로 모든 여론조사결과를 데이터프레임으로 변환시키는 작업을 수행한다.
 
-```{r polls-get-data-loop, eval = TRUE}
+```{r polls-get-data-loop, eval = FALSE}
 wanna_lst <- map(1:length(polls_lst), convert_df)
 
 wanna_lst %>% 
   listviewer::jsonedit()
 
 ```
+
+# 새방식 {#election-polls-new}
+
+## 여론조사 1개 변환 {#election-polls-one}
+
+
+```{r polls-get-data-html}
+Sys.setlocale("LC_ALL", "C")
+
+polls_dat <- polls_html %>% 
+  html_nodes('table') %>% 
+  .[55] %>% 
+  html_table(fill=TRUE) %>% 
+  .[[1]]
+
+Sys.setlocale("LC_ALL", "Korean")
+
+polls_dat
+```
+
+
+# 여론조사 현황 {#election-polls-news}
+
+중앙선거여론조사심의위원회 웹사이트에서 
+[알림마당 &rarr; 여론조사결과 현황](https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467)을 통해 여론조사진행에 대한 전반적인 사항을 확인할 수 있다. [MBC 총선여론조사](http://poll-mbc.co.kr/)웹사이트에서 동일한 데이터를 크롤링하여 데이터를 제공하고 있다.
+
+
+```{r get-data}
+library(tidyverse)
+library(rvest)
+
+nesdc_html <- read_html("https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467")
+
+nesdc_txt <- nesdc_html %>% 
+  html_nodes('div.board') %>% 
+  html_nodes('span.col') %>% 
+  html_text()
+
+nesdc_dat <- nesdc_txt %>% 
+  enframe() %>% 
+  mutate(variable = rep(1:7, 11)) %>% 
+  mutate(observation = rep(1:11, each=7)) %>% 
+  select(-name) %>% 
+  spread(variable, value)
+
+nesdc_df <- nesdc_dat %>% 
+  set_names(nesdc_dat[1,]) %>% 
+  slice(2:n()) %>% 
+  select(-`1`, -결정사항)
+
+nesdc_df %>% 
+  DT::datatable()
+
+
+```
+
+
+

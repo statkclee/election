@@ -1,0 +1,43 @@
+---
+layout: page
+title: "대한민국 제21대 국회의원 선거"
+subtitle: "지지율"
+author:
+    name: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: hide
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+
+```
+
+# 데이터 {#major-media}
+
+- 중앙선거관리위원회 
+    - [중앙선거관리위원회](https://www.nec.go.kr/vt/main.do)
+    - [선거통계시스템](http://info.nec.go.kr/)
+    - [중앙선거여론조사심의위원회](https://www.nesdc.go.kr/portal/main.do)
+    - [후보자정보](http://info.nec.go.kr/main/showDocument.xhtml?electionId=0020200415&topMenuId=CP&secondMenuId=CPRI03)
+- 포털/언론사    
+    - [MBC - 우리 동네 누가 앞서나?](http://poll-mbc.co.kr/)
+    - [네이버 총선](https://news.naver.com/main/election/nation2020/index.nhn)
+    - [다음 제21대 국회의원 선거](https://election.daum.net/20200415/poll)
+- 백과사전
+    - [대통령 지지율](https://ko.wikipedia.org/wiki/대한민국의_대통령_지지율)
+    - [정당 지지율](https://ko.wikipedia.org/wiki/대한민국의_정당_지지율)
+    
+    
+
+

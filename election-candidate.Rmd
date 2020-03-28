@@ -601,3 +601,46 @@ candidate_list %>%
   mutate(length = map_int(value, length)) %>% 
   filter(length < 19)
 ```
+
+
+# EDA {#election-candidate-EDA}
+
+## 재산현황 
+
+```{r candidate-eda}
+candidate_df <- candidate_list %>% 
+  enframe() %>% 
+  unnest(value)
+
+candidate_df %>% 
+  filter(정당명 %in% c("더불어민주당", "미래통합당", "정의당")) %>% 
+  ggplot(aes(x=재산, 납부액, color=정당명)) +
+    geom_point() +
+    scale_x_log10() +
+    scale_y_log10() +
+    facet_wrap(~병역)
+
+```
+
+
+## 연령과 재산 
+
+```{r candidate-eda-2}
+candidate_df %>% 
+  filter(정당명 %in% c("더불어민주당", "미래통합당", "정의당")) %>% 
+  ggplot(aes(x=연령, 재산, color=정당명)) +
+    geom_jitter() +
+    scale_y_log10() +
+    facet_wrap(~병역)
+
+```
+
+
+## 전과와 입후보횟수
+
+```{r candidate-eda-3}
+candidate_df %>% 
+  filter(정당명 %in% c("더불어민주당", "미래통합당", "정의당")) %>% 
+  ggplot(aes(x=전과, 입후보횟수, color=정당명)) +
+    geom_jitter()
+```

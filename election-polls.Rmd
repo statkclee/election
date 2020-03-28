@@ -175,8 +175,21 @@ polls_dat
 중앙선거여론조사심의위원회 웹사이트에서 
 [알림마당 &rarr; 여론조사결과 현황](https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467)을 통해 여론조사진행에 대한 전반적인 사항을 확인할 수 있다. [MBC 총선여론조사](http://poll-mbc.co.kr/)웹사이트에서 동일한 데이터를 크롤링하여 데이터를 제공하고 있다.
 
+[알림마당 &rarr; 여론조사결과 현황](https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467)에 담긴 여론조사결과 현황을 긁어와서 분석한다.
 
-```{r get-data}
+```{r get-data-screen-shot}
+library(webshot2)
+
+webshot("https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467", "fig/nesdc.png")
+```
+
+![](fig/nesdc.png)
+
+## 특정 페이지 {#election-polls-news-one}
+
+[알림마당 &rarr; 여론조사결과 현황](https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467)의 첫번째 현황만 가져와서 데이터프레임으로 변환시킨다.
+
+```{r get-data-one-page}
 library(tidyverse)
 library(rvest)
 
@@ -201,9 +214,118 @@ nesdc_df <- nesdc_dat %>%
 
 nesdc_df %>% 
   DT::datatable()
-
-
 ```
 
 
+## 두번째 페이지 {#election-polls-news-all}
+
+
+`https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467&pageIndex=2"` 와 같이 `&pageIndex=2`만 조정하게 되면 다른 페이지를 가져올 수 있는 것이 확인되었다.
+
+```{r get-data-two}
+
+nesdc_html <- read_html("https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467&pageIndex=2")
+
+nesdc_txt <- nesdc_html %>% 
+  html_nodes('div.board') %>% 
+  html_nodes('span.col') %>% 
+  html_text()
+
+nesdc_dat <- nesdc_txt %>% 
+  enframe() %>% 
+  mutate(variable = rep(1:7, 11)) %>% 
+  mutate(observation = rep(1:11, each=7)) %>% 
+  select(-name) %>% 
+  spread(variable, value)
+
+nesdc_df <- nesdc_dat %>% 
+  set_names(nesdc_dat[1,]) %>% 
+  slice(2:n()) %>% 
+  select(-`1`, -결정사항)
+
+nesdc_df
+```
+
+## 함수 {#election-polls-news-all-function}
+
+`https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467&pageIndex=2"` 와 같이 `&pageIndex=2`만 조정하게 되면 다른 페이지를 가져올 수 있는 것이 확인되었기 때문에 함수를 만들어서 이를 테스트 한다.
+
+```{r get-data-two}
+
+get_survey_page <- function(page) {
+  
+  nesdc_url <- glue::glue("https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467&pageIndex={page}")
+  
+  nesdc_html <- read_html(nesdc_url)
+  
+  nesdc_txt <- nesdc_html %>% 
+    html_nodes('div.board') %>% 
+    html_nodes('span.col') %>% 
+    html_text()
+  
+  nesdc_dat <- nesdc_txt %>% 
+    enframe() %>% 
+    mutate(variable = rep(1:7, 11)) %>% 
+    mutate(observation = rep(1:11, each=7)) %>% 
+    select(-name) %>% 
+    spread(variable, value)
+  
+  nesdc_df <- nesdc_dat %>% 
+    set_names(nesdc_dat[1,]) %>% 
+    slice(2:n()) %>% 
+    select(-`1`, -결정사항)
+  
+  return(nesdc_df)
+}
+
+get_survey_page(3)
+```
+
+
+## 전체데이터 {#election-polls-news-all-crawl}
+
+`https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467&pageIndex=2"` 와 같이 `&pageIndex=2`만 조정하게 되면 다른 페이지를 가져올 수 있는 것이 확인되었기 때문에 함수를 만들어서 이를 테스트했고, 이제 원하는 만큼 데이터를 페이지수를 조정해서 가져올 수 있다.
+
+```{r get-data-fulldata, eval = FALSE}
+page_index <- 1:50
+
+nesdc_full_df <-  map_df(page_index, get_survey_page)
+
+nesdc_full_df %>% 
+  write_rds("data/nesdc_full_df.rds")
+```
+
+최근 500건의 데이터를 긁어와서 이를 분석하는데 `2020-01-01` 부터 분석이 되도록 데이터를 정리한다.
+
+```{r get-data-fulldata-eval, eval = TRUE}
+nesdc_full_df <- read_rds("data/nesdc_full_df.rds")
+
+nesdc_eda_df <- nesdc_full_df %>% 
+  mutate(등록일 = lubridate::ymd(등록일)) %>% 
+  filter(등록일 >= as.Date("2020-01-01")) %>% 
+  mutate_if(is.character, factor)
+```
+
+
+# 탐색적 데이터 분석 {#election-polls-EDA}
+
+본격적인 탐색적 분석에 앞서 데이터 특성을 알아본다.
+이를 위해서 `skimr` 팩키지 `skim()` 함수를 사용한다.
+
+```{r election-polls-EDA-skim}
+nesdc_eda_df %>% 
+  skimr::skim(.)
+```
+
+
+## 단변량 분석 {#election-polls-EDA-univariate}
+
+각 변수별로 특성을 살펴본다.
+
+
+```{r election-polls-EDA-univariate}
+library(summarytools)
+dfSummary(nesdc_eda_df, style = 'grid', graph.magnif = 0.75, 
+          valid.col = FALSE, tmp.img.dir = "/tmp")
+```
 

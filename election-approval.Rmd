@@ -37,6 +37,8 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 - 백과사전
     - [대통령 지지율](https://ko.wikipedia.org/wiki/대한민국의_대통령_지지율)
     - [정당 지지율](https://ko.wikipedia.org/wiki/대한민국의_정당_지지율)
+    - [나무위키: 후보자 지지율](https://namu.wiki/w/제21대 국회의원 선거/여론조사)
+    - [위키백과: 정당지지율](https://ko.wikipedia.org/wiki/대한민국_제21대_국회의원_선거_여론_조사)
     
     
 

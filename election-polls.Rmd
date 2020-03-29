@@ -22,6 +22,9 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
                       comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
 
 Sys.setlocale("LC_ALL","ko_KR.UTF-8")
+
+library(tidyverse)
+library(webshot2)
 ```
 
 
@@ -32,7 +35,7 @@ Sys.setlocale("LC_ALL","ko_KR.UTF-8")
 
 [알림마당 &rarr; 여론조사결과 현황](https://www.nesdc.go.kr/portal/bbs/B0000005/list.do?menuNo=200467)에 담긴 여론조사결과 현황을 긁어와서 분석한다.
 
-```{r get-data-screen-shot}
+```{r get-data-screen-shot, eval = FALSE}
 Sys.setlocale("LC_ALL","ko_KR.UTF-8")
 
 library(tidyverse)

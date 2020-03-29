@@ -135,6 +135,9 @@ get_candidate_info <- function(cityCode, sgg_CityCode) {
 get_candidate_info(1100, 2110101) %>% 
   tbl_df
 
+# 강원 
+# get_candidate_info(4200, 2420101) %>% 
+#   tbl_df
 ```
 
 ## `cityCode`, `sggCityCode` {#election-candidate-code}
@@ -600,6 +603,10 @@ candidate_list %>%
   enframe() %>% 
   mutate(length = map_int(value, length)) %>% 
   filter(length < 19)
+
+candidate_df %>% 
+  count(선거구명)
+
 ```
 
 
@@ -644,3 +651,38 @@ candidate_df %>%
   ggplot(aes(x=전과, 입후보횟수, color=정당명)) +
     geom_jitter()
 ```
+
+# 데이터 품질 {#check-data-quality}
+
+## 시도별 확인 {#check-data-quality-pronvince}
+
+```{r check-data-quality}
+## 선거구 253
+library(sf)
+precinct_20 <- st_read("data/shapefile/election_district_20/election_district_20.shp")
+
+precinct_20 %>%
+  filter(province == "경기도") %>% 
+  count(precinct_n)
+
+## 크롤링 선거구
+### 서울특별시:49
+precinct_서울 <- full_code %>% 
+  filter(cityName == "서울특별시")
+
+서울_list <- map2(precinct_서울$cityCode, precinct_서울$sggCityCode, safely_get_candidate_info)
+서울_df <- map_df(서울_list, "result")
+  
+### 경기도:60
+precinct_경기 <- full_code %>% 
+  filter(cityName == "경기도")
+
+경기_list <- map2(precinct_경기$cityCode, precinct_경기$sggCityCode, safely_get_candidate_info)
+경기_df <- map_df(경기_list, "result")
+경기_df %>% 
+  count(선거구명)
+
+map(경기_list, "result")
+
+```
+

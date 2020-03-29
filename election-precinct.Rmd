@@ -24,7 +24,7 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 Sys.setlocale("LC_ALL","ko_KR.UTF-8")
 ```
 
-# 제21대 총선 선거구 {#election-polls-area}
+# 선거구 지도 {#election-polls-map}
 
 [2020년 21대 국회의원 총선거 지도](https://github.com/OhmyNews/2020_21_elec_map)는 VW Lab 김승범 소장님 [대한민국 행정동 경계 파일](https://github.com/vuski/admdongkor)을 기반으로 하여 오마이뉴스에서 제작한 지도입니다.
 
@@ -39,4 +39,88 @@ precinct %>%
   select(geometry) %>% 
   plot()
 ```
+
+
+# 제21대 총선 선거구 {#election-polls-area-precinct}
+
+위키백과 [대한민국의 국회의원 선거구 목록](https://ko.wikipedia.org/wiki/대한민국의_국회의원_선거구_목록)에 따르면 국회의원 선거구 목록을 가져올 수 있다. 시도명을 추출하여 별도 벡터로 준비하고 추출한 선거구표 데이터프레임을 하나로 합쳐서 시도명과 결합된 최종 21대 총선 선거구 데이터로 준비한다.
+
+```{r polls-get-precinct, eval = FALSE}
+library(tidyverse)
+library(rvest)
+library(curl)
+
+Sys.setlocale("LC_ALL", "C")
+
+
+precinct_html <- read_html(curl('https://ko.wikipedia.org/wiki/대한민국의_국회의원_선거구_목록', handle = curl::new_handle("useragent" = "Mozilla/5.0")))
+
+## 시도명
+province_name <- precinct_html %>% 
+  html_nodes('span.mw-headline') %>% 
+  html_text()
+
+province_name <- province_name[2:(length(province_name)-1)]
+
+## 선거구표
+precinct_tbl <- precinct_html %>% 
+  html_nodes('table') %>% 
+  html_table(fill = TRUE)
+
+Sys.setlocale("LC_ALL", "Korean")
+
+# 시도명 253개 맞춤
+precinct_253_df <- data.frame()
+
+for(i in 1:length(province_name)) {
+  tmp_province_df <- precinct_tbl[[i]] %>% 
+    mutate(시도명 = precinct_name[i])
+  precinct_253_df <- bind_rows(precinct_253_df, tmp_province_df) %>% 
+      select(시도명, 선거구명, 선거구역)
+}
+
+precinct_253_df %>% 
+  write_rds("data/precinct_253_df.rds")
+```
+
+제대로 가져왔는지 확인보자.
+
+```{r polls-get-precinct-DT, eval = TRUE}
+precinct_253_df <- read_rds("data/precinct_253_df.rds")
+
+precinct_253_df %>% 
+  DT::datatable()
+```
+
+## 시도별 선거구 {#election-polls-area-precinct-province}
+
+시도별 선거구가 가장 많은 살펴보자
+
+<div class = "row">
+  <div class = "col-md-4">
+**시도명 표**
+
+```{r precinct-by-province, results="as-is"}
+precinct_253_df %>% 
+  count(시도명, sort=TRUE, name="선거구수") %>% 
+  mutate(비율=round(선거구수/sum(선거구수) *100,1)) %>% 
+  knitr::kable()
+```
+
+  </div>
+  <div class = "col-md-8">
+**시도명 시각화**
+
+```{r precinct-by-province-plot, results="as-is"}
+precinct_253_df %>% 
+  count(시도명, sort=TRUE, name="선거구수") %>% 
+  ggplot(aes(x=fct_reorder(시도명, 선거구수), y=선거구수, fill=시도명)) +
+    geom_col(show.legend = FALSE) +
+    coord_flip() +
+    labs(x="", title="제21대 총선 시도별 선거구수")
+```
+
+  </div>
+</div>
+
 

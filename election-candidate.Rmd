@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "대한민국 제21대 국회의원 선거"
-subtitle: "출마자 신상정보"
+subtitle: "출마자 신상정보: 데이터"
 author:
     name: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
 date: "`r Sys.Date()`"
@@ -478,10 +478,10 @@ sgg_경기 <- sgg_경기 %>%
   mutate(cityCode = "4100")
 
 sgg_경남 <- sgg_경남 %>% 
-  mutate(cityCode = "4700")
+  mutate(cityCode = "4800")
 
 sgg_경북 <- sgg_경북 %>% 
-  mutate(cityCode = "4800")
+  mutate(cityCode = "4700")
 
 sgg_광주 <- sgg_광주 %>% 
   mutate(cityCode = "2900")
@@ -557,7 +557,6 @@ safely_get_candidate_info <- safely(get_candidate_info, otherwise = NA_real_)
 
 candidate_list <- map2(full_code$cityCode, full_code$sggCityCode, safely_get_candidate_info)
 
-
 ## DRY RUN CODE !!!
 # for(i in 1:nrow(cityCode)) {
 #   for(j in 1:nrow(sggCityCode)) {
@@ -583,7 +582,7 @@ candidate_list <- map2(full_code$cityCode, full_code$sggCityCode, safely_get_can
 # }
 
 candidate_list %>% 
-  write_rds("data/candidate_df.rds")
+  write_rds("data/candidate_list.rds")
 
 ```
 
@@ -593,32 +592,194 @@ candidate_list %>%
 전체 시도에 대해서 선거구별로 수집한 데이터를 살펴보고 정제한다.
 
 ```{r code-function-clean}
-candidate_list <- read_rds("data/candidate_df.rds")
+candidate_list <- read_rds("data/candidate_list.rds")
 
-candidate_df <- candidate_list %>% 
-  enframe() %>% 
-  unnest(value)
-
-candidate_list %>% 
-  enframe() %>% 
-  mutate(length = map_int(value, length)) %>% 
-  filter(length < 19)
+candidate_df <- map_df(candidate_list, "result")
 
 candidate_df %>% 
-  count(선거구명)
-
+  filter(정당명 == "더불어민주당") %>% 
+  mutate(시도명 = str_extract(주소, ".*?(?=\\s)")) %>% 
+  count(시도명, 선거구명)
 ```
 
 
-# EDA {#election-candidate-EDA}
+# 데이터 품질 {#check-data-quality}
+
+## 시도별 확인 {#check-data-quality-pronvince}
+
+```{r check-data-quality, eval = FALSE}
+## 크롤링 선거구
+### 서울특별시:49
+precinct_서울 <- full_code %>% 
+  filter(cityName == "서울특별시")
+
+서울_list <- map2(precinct_서울$cityCode, precinct_서울$sggCityCode, safely_get_candidate_info)
+서울_df <- map_df(서울_list, "result")
+  
+### 경기도:59
+precinct_경기 <- full_code %>% 
+  filter(cityName == "경기도")
+
+경기_list <- map2(precinct_경기$cityCode, precinct_경기$sggCityCode, safely_get_candidate_info)
+경기_df <- map_df(경기_list, "result")
+
+### 부산:18
+precinct_부산 <- full_code %>% 
+  filter(cityName == "부산광역시")
+
+부산_list <- map2(precinct_부산$cityCode, precinct_부산$sggCityCode, safely_get_candidate_info)
+부산_df <- map_df(부산_list, "result")
+
+### 경남:18
+precinct_경남 <- full_code %>% 
+  filter(cityName == "경상남도")
+
+경남_list <- map2(precinct_경남$cityCode, precinct_경남$sggCityCode, safely_get_candidate_info)
+경남_df <- map_df(경남_list, "result")
+
+### 경북:13
+precinct_경북 <- full_code %>% 
+  filter(cityName == "경상북도")
+
+경북_list <- map2(precinct_경북$cityCode, precinct_경북$sggCityCode, safely_get_candidate_info)
+경북_df <- map_df(경북_list, "result")
+
+### 인천:13
+precinct_인천 <- full_code %>% 
+  filter(cityName == "인천광역시")
+
+인천_list <- map2(precinct_인천$cityCode, precinct_인천$sggCityCode, safely_get_candidate_info)
+인천_df <- map_df(인천_list, "result")
+
+### 대구:12
+precinct_대구 <- full_code %>% 
+  filter(cityName == "대구광역시")
+
+대구_list <- map2(precinct_대구$cityCode, precinct_대구$sggCityCode, safely_get_candidate_info)
+대구_df <- map_df(대구_list, "result")
+
+### 충남:11
+precinct_충남 <- full_code %>% 
+  filter(cityName == "충청남도")
+
+충남_list <- map2(precinct_충남$cityCode, precinct_충남$sggCityCode, safely_get_candidate_info)
+충남_df <- map_df(충남_list, "result")
+
+### 전남:10
+precinct_전남 <- full_code %>% 
+  filter(cityName == "전라남도")
+
+전남_list <- map2(precinct_전남$cityCode, precinct_전남$sggCityCode, safely_get_candidate_info)
+전남_df <- map_df(전남_list, "result")
+
+### 전북:10
+precinct_전북 <- full_code %>% 
+  filter(cityName == "전라북도")
+
+전북_list <- map2(precinct_전북$cityCode, precinct_전북$sggCityCode, safely_get_candidate_info)
+전북_df <- map_df(전북_list, "result")
+
+### 강원도:8
+precinct_강원 <- full_code %>% 
+  filter(cityName == "강원도")
+
+강원_list <- map2(precinct_강원$cityCode, precinct_강원$sggCityCode, safely_get_candidate_info)
+강원_df <- map_df(강원_list, "result")
+
+### 광주:8
+precinct_광주 <- full_code %>% 
+  filter(cityName == "광주광역시")
+
+광주_list <- map2(precinct_광주$cityCode, precinct_광주$sggCityCode, safely_get_candidate_info)
+광주_df <- map_df(광주_list, "result")
+
+### 충북:8
+precinct_충북 <- full_code %>% 
+  filter(cityName == "충청북도")
+
+충북_list <- map2(precinct_충북$cityCode, precinct_충북$sggCityCode, safely_get_candidate_info)
+충북_df <- map_df(충북_list, "result")
+
+### 대전:7
+precinct_대전 <- full_code %>% 
+  filter(cityName == "대전광역시")
+
+대전_list <- map2(precinct_대전$cityCode, precinct_대전$sggCityCode, safely_get_candidate_info)
+대전_df <- map_df(대전_list, "result")
+
+### 울산:6
+precinct_울산 <- full_code %>% 
+  filter(cityName == "울산광역시")
+
+울산_list <- map2(precinct_울산$cityCode, precinct_울산$sggCityCode, safely_get_candidate_info)
+울산_df <- map_df(울산_list, "result")
+
+### 제주:3
+precinct_제주 <- full_code %>% 
+  filter(cityName == "제주특별자치도")
+
+제주_list <- map2(precinct_제주$cityCode, precinct_제주$sggCityCode, safely_get_candidate_info)
+제주_df <- map_df(제주_list, "result")
+
+### 세종:2
+precinct_세종 <- full_code %>% 
+  filter(cityName == "세종특별자치시")
+
+세종_list <- map2(precinct_세종$cityCode, precinct_세종$sggCityCode, safely_get_candidate_info)
+세종_df <- map_df(세종_list, "result")
+```
+
+## 시도별 종합 {#check-data-quality-pronvince-combine}
+
+```{r check-data-quality-combine, eval = FALSE}
+## 원본 데이터
+candidate_253_df <- bind_rows(강원_df, 경기_df, 경남_df, 경북_df, 광주_df, 대구_df, 
+                              대전_df, 부산_df, 서울_df, 세종_df, 울산_df, 인천_df, 
+                              전남_df, 전북_df, 제주_df, 충남_df, 충북_df) %>% tbl_df
+
+candidate_253_df %>% 
+  mutate(시도명 = str_extract(주소, "[가-힣].*?(?=\\s)")) %>% 
+  filter(정당명 == "더불어민주당") %>% 
+  count(시도명, 선거구명)
+
+candidate_253_df %>% 
+  write_rds("data/candidate_253_df.rds")
+
+## 원본 데이터 + 시도명
+강원_df <- 강원_df %>% mutate(시도명="강원도") %>% tbl_df %>% select(시도명, everything())
+경기_df <- 경기_df %>% mutate(시도명="경기도") %>% tbl_df %>% select(시도명, everything())
+경남_df <- 경남_df %>% mutate(시도명="경상남도") %>% tbl_df %>% select(시도명, everything())
+경북_df <- 경북_df %>% mutate(시도명="경상북도") %>% tbl_df %>% select(시도명, everything())
+광주_df <- 광주_df %>% mutate(시도명="광주광역시") %>% tbl_df %>% select(시도명, everything())
+대구_df <- 대구_df %>% mutate(시도명="대구광역시") %>% tbl_df %>% select(시도명, everything())
+대전_df <- 대전_df %>% mutate(시도명="대전광역시") %>% tbl_df %>% select(시도명, everything())
+부산_df <- 부산_df %>% mutate(시도명="부산광역시") %>% tbl_df %>% select(시도명, everything())
+서울_df <- 서울_df %>% mutate(시도명="서울특별시") %>% tbl_df %>% select(시도명, everything())
+세종_df <- 세종_df %>% mutate(시도명="세종특별자치시") %>% tbl_df %>% select(시도명, everything())
+울산_df <- 울산_df %>% mutate(시도명="울산광역시") %>% tbl_df %>% select(시도명, everything())
+인천_df <- 인천_df %>% mutate(시도명="인천광역시") %>% tbl_df %>% select(시도명, everything())
+전남_df <- 전남_df %>% mutate(시도명="전라남도") %>% tbl_df %>% select(시도명, everything())
+전북_df <- 전북_df %>% mutate(시도명="전라북도") %>% tbl_df %>% select(시도명, everything())
+제주_df <- 제주_df %>% mutate(시도명="제주특별자치도") %>% tbl_df %>% select(시도명, everything())
+충남_df <- 충남_df %>% mutate(시도명="충청남도") %>% tbl_df %>% select(시도명, everything())
+충북_df <- 충북_df %>% mutate(시도명="충청북도") %>% tbl_df %>% select(시도명, everything())
+
+candidate_253_df <- bind_rows(강원_df, 경기_df, 경남_df, 경북_df, 광주_df, 대구_df, 
+                              대전_df, 부산_df, 서울_df, 세종_df, 울산_df, 인천_df, 
+                              전남_df, 전북_df, 제주_df, 충남_df, 충북_df) %>% tbl_df
+
+candidate_253_df %>% 
+  count(시도명, 선거구명)
+
+candidate_253_df %>% 
+  write_rds("data/candidate_253_df.rds")
+```
+
+# EDA (의미없음) {#election-candidate-EDA}
 
 ## 재산현황 
 
 ```{r candidate-eda}
-candidate_df <- candidate_list %>% 
-  enframe() %>% 
-  unnest(value)
-
 candidate_df %>% 
   filter(정당명 %in% c("더불어민주당", "미래통합당", "정의당")) %>% 
   ggplot(aes(x=재산, 납부액, color=정당명)) +
@@ -652,37 +813,55 @@ candidate_df %>%
     geom_jitter()
 ```
 
-# 데이터 품질 {#check-data-quality}
+# 지리정보 매칭 {#geospatial-mapping}
 
-## 시도별 확인 {#check-data-quality-pronvince}
+## 정당별 선거구 공천 {#geospatial-mapping-precinct}
 
-```{r check-data-quality}
-## 선거구 253
+총 253개 선거구 중에서 미공천된 주요 정당별 미공천된 곳이 얼마인지 확인해보자.
+
+```{r mapping-geospatial-precinct}
+candidate_253_df <- read_rds("data/candidate_253_df.rds")
+
+party_precinct_df <- candidate_253_df %>% 
+  filter(정당명 %in% c("더불어민주당", "미래통합당", "정의당", "민생당")) %>% 
+  count(정당명, 시도명, 선거구명) %>% 
+  spread(정당명, n, fill=0)
+
+party_precinct_df %>% 
+  gather(정당, 후보자, -시도명, -선거구명) %>% 
+  group_by(정당) %>% 
+  summarise(후보자수 = sum(후보자)) %>% 
+  mutate(미공천 = 253 - 후보자수,
+         공천율 = round(후보자수/253 *100,1)) %>% 
+  knitr::kable()
+```
+
+
+## 정당 공천 시각화 {#geospatial-mapping-precinct-viz}
+
+정당별로 총 253개 선거구 중에서 공천된 곳을 시각화 해보자.
+미래통합당은 전라도 지역에 공천이 되지 않은 것으로 파악된다.
+
+```{r mapping-geospatial-viz}
+## 선거구 253 지도
 library(sf)
-precinct_20 <- st_read("data/shapefile/election_district_20/election_district_20.shp")
 
-precinct_20 %>%
-  filter(province == "경기도") %>% 
-  count(precinct_n)
+precinct_sf <- st_read("data/shapefile/2020_21_elec_253_simple.json") %>% 
+  separate(SGG_2, into=c("시도명", "선거구명"), remove=FALSE) %>% 
+  rmapshaper::ms_simplify(keep=0.1)
 
-## 크롤링 선거구
-### 서울특별시:49
-precinct_서울 <- full_code %>% 
-  filter(cityName == "서울특별시")
+precinct_sf <- precinct_sf %>% 
+  left_join(candidate_253_df) %>% 
+  filter(정당명 %in% c("더불어민주당", "미래통합당", "정의당", "민생당")) %>% 
+  mutate(정당명 = factor(정당명, levels=c("더불어민주당", "미래통합당", "정의당", "민생당")))
 
-서울_list <- map2(precinct_서울$cityCode, precinct_서울$sggCityCode, safely_get_candidate_info)
-서울_df <- map_df(서울_list, "result")
-  
-### 경기도:60
-precinct_경기 <- full_code %>% 
-  filter(cityName == "경기도")
-
-경기_list <- map2(precinct_경기$cityCode, precinct_경기$sggCityCode, safely_get_candidate_info)
-경기_df <- map_df(경기_list, "result")
-경기_df %>% 
-  count(선거구명)
-
-map(경기_list, "result")
+precinct_sf %>% 
+  ggplot(aes(fill=정당명)) +
+    geom_sf(aes(fill = 정당명)) +
+    scale_fill_manual(values=c("blue", "pink", "yellow", "green"))  +
+    facet_wrap(~정당명, scales="fixed") +
+    theme_classic() +
+    theme(legend.position = "none") 
 
 ```
 

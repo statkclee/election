@@ -1,0 +1,137 @@
+---
+layout: page
+title: "대한민국 제21대 국회의원 선거"
+subtitle: "매니페스토: 국회의원평가"
+author:
+    name: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_float: true
+    highlight: tango
+    code_folding: hide
+    number_section: true
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
+                      comment="", digits = 3, tidy = FALSE, prompt = FALSE, fig.align = 'center')
+
+Sys.setlocale("LC_ALL","ko_KR.UTF-8")
+
+library(tidyverse)
+library(webshot2)
+```
+
+
+# 매니페스토(Manfesto) {#election-policy-manifesto}
+
+위키백과사전 [매니페스토(Manifesto)](https://ko.wikipedia.org/wiki/매니페스토)는  개인이나 단체가 대중에 대하여 확고한 정치적 의도와 견해를 밝히는 것으로 연설이나 문서의 형태로 어원은 라틴어에서 파생된 이탈리아어이며 "분명한 의미", "매우 뚜렷함"이라는 의미를 갖는다. 중요한 매니페스토들로 미국 독립선언서에 영향을 준 벨기에 독립선언서 "the Manifesto of the Province of Flanders (1790년)", 핵과 핵전쟁에 대한 반대를 표명한 "Russell-Einstein Manifesto(러셀-아인슈타인 선언, 1955년)"을 꼽을 수 있다.
+
+[한국매니페스토 실천본부](http://manifesto.or.kr/?page_id=3614)는 공약정보센터를 통해서 국회의원, 대통령, 지방자치단체장에 대한 매니페스토 실천이행여부를 점검하고 있다.
+
+# 대상목록 데이터 {#manifest-data-list}
+
+한국매니페스토 실천본부 [제20대 국회의원 공약이행자체평가표(2020년)](http://manifesto.or.kr/manifesto_data/20200210/2020na_map.htm) 웹사이트에서 제20대 국회의원 평가데이터를 다운로드 받는다.
+
+```{r download-manifesto-data}
+
+manifesto_url <- "http://www.manifesto.or.kr/manifesto_data/20200210/2020/2020_251.zip"
+```
+
+[제20대 국회의원 공약이행자체평가표(2020년)](http://manifesto.or.kr/manifesto_data/20200210/2020na_map.htm) 웹사이트가 깔끔하게 정리되어 있는데 시도별로 나눠줘있다.
+
+```{r webshot-manifesto}
+webshot2::webshot("http://manifesto.or.kr/manifesto_data/20200210/2020na_map.htm", "fig/manifesto_2020.png")
+```
+
+
+## 특정 시도 {#manifest-data-list-province}
+
+먼저 특정시도를 하나 잡아서 이를 데이터프레임으로 만든다.
+
+```{r download-file-list}
+library(tidyverse)
+library(rvest)
+
+manifest_html <- read_html("http://www.manifesto.or.kr/manifesto_data/20200210/20na/01.html")
+
+manifest_tbl <- manifest_html %>% 
+  html_nodes("table") %>% 
+  html_table(fill=TRUE) %>% 
+  .[[1]]
+
+manifest_df <- manifest_tbl %>% 
+  janitor::clean_names() %>% 
+  tbl_df %>% 
+  set_names(manifest_tbl[1,]) %>% 
+  slice(2:n())
+
+manifest_df %>% 
+  DT::datatable()
+```
+
+
+## 함수 {#manifest-data-list-province-function}
+
+특정시도를 하나 잡아서 이를 데이터프레임을 제작한 다음 이를 함수로 만든다.
+
+```{r download-file-list-function}
+
+get_manifesto_list <- function(sido) {
+
+  manifesto_sido_url <- glue::glue("http://www.manifesto.or.kr/manifesto_data/20200210/20na/{sido}.html")
+  manifest_html <- read_html(manifesto_sido_url)
+
+  manifest_tbl <- manifest_html %>% 
+    html_nodes("table") %>% 
+    html_table(fill=TRUE) %>% 
+    .[[1]]
+  
+  manifest_df <- manifest_tbl %>% 
+    janitor::clean_names() %>% 
+    tbl_df %>% 
+    set_names(manifest_tbl[1,]) %>% 
+    slice(2:n())
+  
+  return(manifest_df)
+} 
+
+get_manifesto_list("01") %>% 
+  DT::datatable()
+```
+
+## 반복 {#manifest-data-list-province-loop}
+
+특정시도를 하나 잡아서 이를 데이터프레임을 제작한 다음 이를 함수로 만들게 되면 다음 단계로 `for` 루프나 `purrr` 팩키지를 사용해서 전체 시도에 대해 동일한 작업을 반복하여 결과를 얻을 수 있다.
+
+```{r download-file-list-loop}
+sido_number <- str_pad(1:17, width=2, pad='0')
+
+manifesto_list_df <- map_df(sido_number, get_manifesto_list)
+
+manifesto_list_df %>% 
+  DT::datatable()
+
+# manifesto_list_df %>%
+  # write_rds("data/manifesto_list_df.rds")
+```
+
+## EDA 분석 {#manifest-EDA}
+
+`-`는 국회의원이 없거나 무슨 이유인지 평가정보가 없는 경우다. 
+
+```{r manifesto-EDA}
+manifesto_list_df %>% 
+  count(`2020년평가정보`, sort=TRUE, name="건수") %>% 
+  mutate(비율 = 건수 / sum(건수)*100)
+```
+
+
+# 의원별 데이터 {#manifest-data-congressman}
+
+

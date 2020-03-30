@@ -84,3 +84,9 @@ download.file(url="http://policy.nec.go.kr/plc/common/downloadFile.do?requestedF
 
 ![](data/pdf/미래통합당_정당정책.pdf){#id .class width="100%" height=600}
 
+## 텍스트 추출 {#party-policy-PDF-text} 
+
+```{r party-policy-extraction}
+
+```
+

@@ -13,6 +13,7 @@ title: 대한민국 제21대 국회의원 선거
     - [여론조사기관: 2020-03-20](election-poll-company.html)
 - **정책(policy)**
     - [정당정책](election-policy.html)
+    - [매니페스토: 국회의원평가](election-manifesto.html)
 - [세대별 미디어](election_media.html)
     - [온라인 환경 변화](election_online.html)
 - 정치/경제/인구

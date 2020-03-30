@@ -28,7 +28,9 @@ library(webshot2)
 ```
 
 
-# 데이터 {#election-policy-data}
+# 후보 정책 {#election-policy-candidate}
+
+# 정당 선거공약 {#election-policy-data}
 
 중앙선거관리위원회 
 [정책-공약 알리미](http://policy.nec.go.kr/) 웹사이트에서 정당정책과 당선인 공약 등 정보를 확인할 수 있다. 문제는 PDF 문서로 데이터를 제공한다는 점이 마음에 걸린다.
@@ -54,11 +56,31 @@ download.file(url="http://policy.nec.go.kr/plc/common/downloadFile.do?requestedF
 ## 정의당
 download.file(url="http://policy.nec.go.kr/plc/common/downloadFile.do?requestedFileName=%EC%A0%9C21%EB%8C%80%20%EA%B5%AD%ED%9A%8C%EC%9D%98%EC%9B%90%EC%84%A0%EA%B1%B0_%EC%A0%95%EC%9D%98%EB%8B%B9_%EC%A0%95%EB%8B%B9%EC%A0%95%EC%B1%85.pdf&requestedFullPath=20200415/PDF/PARTY_PLC_PUB/007_730_20200317_1.pdf", destfile = "data/pdf/정의당_정당정책.pdf")
 
-
 ```
 
+## 정책 PDF {.tabset #party-policy-PDF} 
 
-## 후보 데이터 {#election-policy-candidate-data}
+### <font color="blue"> **더불어민주당** </font>
 
+![](data/pdf/더불어민주당_정당정책.pdf){#id .class width="100%" height=600}
 
+### <font color="pink"> **미래통합당** </font>
+
+![](data/pdf/미래통합당_정당정책.pdf){#id .class width="100%" height=600}
+
+### <font color="green"> **민생당** </font>
+
+![](data/pdf/민생당_정당정책.pdf){#id .class width="100%" height=600}
+
+### <font color="yellow"> **정의당** </font>
+
+![](data/pdf/정의당_정당정책.pdf){#id .class width="100%" height=600}
+
+### <font color="blue"> **더불어시민당** </font>
+
+현재 시점(2020-03-30) 더불어시민당 정당정책 없음.
+
+### <font color="pink"> **미래한국당** </font>
+
+![](data/pdf/미래통합당_정당정책.pdf){#id .class width="100%" height=600}
 

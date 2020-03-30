@@ -11,6 +11,8 @@ title: 대한민국 제21대 국회의원 선거
     - [출마자 신상정보](election-candidate.html)
     - [여론조사 선거구](election-precinct.html)
     - [여론조사기관: 2020-03-20](election-poll-company.html)
+- **정책(policy)**
+    - [정당정책](election-policy.html)
 - [세대별 미디어](election_media.html)
     - [온라인 환경 변화](election_online.html)
 - 정치/경제/인구

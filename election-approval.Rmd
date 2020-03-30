@@ -32,6 +32,7 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
     - [후보자정보](http://info.nec.go.kr/main/showDocument.xhtml?electionId=0020200415&topMenuId=CP&secondMenuId=CPRI03)
 - 포털/언론사    
     - [MBC - 우리 동네 누가 앞서나?](http://poll-mbc.co.kr/)
+    - [오마이뉴스 - 여론조사로 본 4·15 국회의원 총선 판세](http://www.ohmynews.com/NWS_Web/View/at_pg_w.aspx?CNTN_CD=A0002625934)
     - [네이버 총선](https://news.naver.com/main/election/nation2020/index.nhn)
     - [다음 제21대 국회의원 선거](https://election.daum.net/20200415/poll)
 - 백과사전

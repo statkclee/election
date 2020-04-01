@@ -134,4 +134,4 @@ manifesto_list_df %>%
 
 # 의원별 데이터 {#manifest-data-congressman}
 
-
+![매니페스토 데이터 추출 자동화](fig/manifesto-automation.png)

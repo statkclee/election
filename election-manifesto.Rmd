@@ -128,10 +128,62 @@ manifesto_list_df %>%
 ```{r manifesto-EDA}
 manifesto_list_df %>% 
   count(`2020년평가정보`, sort=TRUE, name="건수") %>% 
-  mutate(비율 = 건수 / sum(건수)*100)
+  mutate(비율 = 건수 / sum(건수)*100) %>% 
+  knitr::kable()
 ```
 
 
-# 의원별 데이터 {#manifest-data-congressman}
+# 공약이행평가 데이터 {#manifest-data-congressman}
+
+앞서 제20대 국회의원 매니페스토 대상 목록을 파악했기 때문에 이를 바탕으로 공약이행자체평가표(2020년)를 다운로드 받는다.   
 
 ![매니페스토 데이터 추출 자동화](fig/manifesto-automation.png)
+
+## 데이터 가져오기 {#manifest-data-congressman-download}
+
+`download.file()` 함수로 데이터를 가져올 경우 오류가 발생하여 전체 253개 지역구 국회의원에 대한 공약이행자체평가표를 다운로드 받을 수 없어 `tryCatch()`를 사용해서 오류나는 경우는 화면에 출력하여 넘어가고 정상적인 공약이행자체평가표를 다운로드 받을 수 있도록 작업한다.
+
+```{r download-manifest-dataset, eval = FALSE}
+# 전체 URL
+# for(index in 1:253) {
+#   three_digits <- str_pad(index, width=3, pad='0')
+#   cat(glue::glue("http://www.manifesto.or.kr/manifesto_data/20200210/2020/2020_{three_digits}.zip"), "\n")  
+# }
+
+dir.create("data/manifesto")
+
+for(index in 1:253) {
+  three_digits <- str_pad(index, width=3, pad='0')
+  tryCatch(
+    download.file(url = glue::glue("http://www.manifesto.or.kr/manifesto_data/20200210/2020/2020_{three_digits}.zip"), destfile=glue::glue("data/manifesto/manifesto_{three_digits}.zip")),
+    error = function(e) print(glue::glue("다운로드 {three_digits} 파일 없음"))
+  )
+}
+
+```
+
+![매니페스토 자료구조](fig/manifesto-data.png)
+
+## 데이터 압축풀기 [^extract-7za] {#manifest-data-congressman-unzip}
+
+[^extract-7za]: [Ask Ubuntu, "7zip destination folder -o"](https://askubuntu.com/questions/615874/7zip-destination-folder-o)
+
+압축파일 압출을 푸는 방법 `unzip`, `7za` 등 쉘에서 압축을 푸는 방법으로 문제를 풀어본다. 이를 위해서 쉘 명령어를 사용한다.
+
+```{bash manifesto-data-unzip, eval = FALSE}
+for filename in data/manifesto/*.zip
+do
+  echo "*** processing $filename ***"
+  7za x -y $filename -odata/manifesto
+done
+```
+
+
+```{bash manifesto-data-unzip-check}
+ls data/manifesto/ | grep "^2020.*\.hwp$" | tail
+```
+
+
+## PDF 파일변환 {#manifest-data-congressman-convert}
+
+

@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "대한민국 제21대 국회의원 선거"
-subtitle: "여론조사기관: 2020-03-20"
+subtitle: "여론조사기관: 2020-04-03"
 author:
     name: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
 date: "`r Sys.Date()`"

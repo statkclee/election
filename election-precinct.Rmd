@@ -50,8 +50,7 @@ library(tidyverse)
 library(rvest)
 library(curl)
 
-Sys.setlocale("LC_ALL", "C")
-
+# Sys.setlocale("LC_ALL", "C")
 
 precinct_html <- read_html(curl('https://ko.wikipedia.org/wiki/대한민국의_국회의원_선거구_목록', handle = curl::new_handle("useragent" = "Mozilla/5.0")))
 
@@ -67,14 +66,14 @@ precinct_tbl <- precinct_html %>%
   html_nodes('table') %>% 
   html_table(fill = TRUE)
 
-Sys.setlocale("LC_ALL", "Korean")
+# Sys.setlocale("LC_ALL", "Korean")
 
 # 시도명 253개 맞춤
 precinct_253_df <- data.frame()
 
 for(i in 1:length(province_name)) {
   tmp_province_df <- precinct_tbl[[i]] %>% 
-    mutate(시도명 = precinct_name[i])
+    mutate(시도명 = province_name[i])
   precinct_253_df <- bind_rows(precinct_253_df, tmp_province_df) %>% 
       select(시도명, 선거구명, 선거구역)
 }
@@ -122,5 +121,53 @@ precinct_253_df %>%
 
   </div>
 </div>
+
+# 육각형 선거구 {#shapefile-to-hexbin}
+
+앞서 준비한 제21대 국회의원 선거구 지도에서 서울만 추출하여 이를 원본 그대로 시각화해 본다. 그리고 나서 `geogrid` 기능을 사용해서 육각형 모양으로 변환을 시킨다.
+
+<div class = "row">
+  <div class = "col-md-6">
+**원본 서울 선거구**
+
+```{r tmap-hexbin-seoul-original}
+library(tmap)
+
+seoul_precinct <- precinct %>% 
+  filter(SGG_1 == "서울") %>% 
+  mutate(SGG_Name = str_extract(SGG_3, "\\s([가-힣].+)$"))
+
+seoul_plot <- tm_shape(seoul_precinct) + 
+  tm_polygons("SGG_Code", palette = "viridis") +
+  tm_text("SGG_Name", size=0.5) +
+  tm_layout(fontfamily="NanumGothic",
+            legend.position = c("left","top"),
+            legend.show=FALSE)
+seoul_plot
+```
+
+  </div>
+  <div class = "col-md-6">
+**육각형 서울 선거구**
+
+```{r tmap-hexbin-seoul-hexbin}
+library(geogrid)
+
+seoul_hex <- calculate_grid(shape = seoul_precinct, grid_type = "hexagonal", seed = 3)
+seoul_hex_map <- assign_polygons(seoul_precinct, seoul_hex)
+
+seoul_hex_plot <- tm_shape(seoul_hex_map) + 
+  tm_polygons("SGG_Code", palette = "viridis") +
+  tm_text("SGG_Name", size=0.5) +
+  tm_layout(fontfamily="NanumGothic",
+            legend.position = c("left","top"),
+            legend.show=FALSE)
+
+seoul_hex_plot
+```
+
+  </div>
+</div>
+
 
 

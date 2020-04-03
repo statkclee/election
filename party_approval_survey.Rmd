@@ -141,16 +141,19 @@ party_df
 ## 정적 시각화 {#party-approval-viz-static}
 
 ```{r viz-party-data}
+library(extrafont)
+loadfonts()
+
 party_g <- party_df %>% 
   ggplot(aes(x=조사기간, y=지지율, group=정당, color=정당)) +
     geom_point() +
     geom_line() +
     facet_wrap(~조사기관) +
-    theme_light() +
+    theme_light(base_family = "NanumGothic") +
     labs(x="", y="정당지지율(%)", title="제21대 총선 전 2020년 정당지지율") +
     scale_color_manual(values=c("blue", "#ff00a6", "yellow", "#007d08")) +
     theme(legend.position = "top",
-          axis.text.x = element_text(angle = 270, hjust = 1))
+          axis.text.x = element_text(angle = 270, hjust = 1),)
 
 party_g
 ```

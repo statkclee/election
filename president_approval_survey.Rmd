@@ -45,7 +45,7 @@ library(lubridate)
 
 namu_url <- "https://ko.wikipedia.org/wiki/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%EC%9D%98_%EB%8C%80%ED%86%B5%EB%A0%B9_%EC%A7%80%EC%A7%80%EC%9C%A8"
 
-Sys.setlocale("LC_ALL", "C")
+# Sys.setlocale("LC_ALL", "C")
 
 moon_dat <- namu_url %>% 
   read_html() %>% 
@@ -53,7 +53,7 @@ moon_dat <- namu_url %>%
   html_table(fill=TRUE) %>% 
   .[[1]]
 
-Sys.setlocale("LC_ALL", "Korean")
+# Sys.setlocale("LC_ALL", "Korean")
 
 moon_part_one_df <- moon_dat %>%
   set_names(c("날짜1", "갤럽1", "리얼미터1", "날짜2", "갤럽2", "리얼미터2", "날짜3", "갤럽3", "리얼미터3")) %>% 

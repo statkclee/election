@@ -208,3 +208,138 @@ seoul_full_df %>%
 ```
 
 # 전국 {#sido-all}
+
+
+## 특정 시도 {#sido-all-by-sido}
+
+특정시도에 대한 여론조사 URL을 넣어 지지율을 데이터로 정리한다.
+
+```{r sido-crawl-table-jeju}
+
+## 여론조사 표를 구하는 함수
+get_number_of_tables <- function(sido_url) {
+  sido_html <- read_html(sido_url) 
+  number_of_tables <- sido_html %>% 
+    html_nodes('div.wiki-table-wrap') %>% 
+    length
+  return(number_of_tables)
+}
+
+## 시도명 URL
+
+sido_name <- c("서울특별시","부산광역시","대구광역시","인천광역시","광주광역시","대전광역시","울산광역시","세종특별자치시","경기도", "강원도", "충청북도", "충청남도", "전라북도", "전라남도", "경상북도", "경상남도", "제주특별자치도")
+
+sido_url <- glue::glue("https://namu.wiki/w/제21대 국회의원 선거/여론조사/{sido_name}")
+
+## 시도명 여론조사 표 추출함수
+
+scrape_table <- function(sido_url, table_number) {
+  
+  sido_html <- read_html(sido_url) 
+  
+  namu_txt <- sido_html %>% 
+    html_nodes('div.wiki-table-wrap') %>% 
+    .[table_number] %>% 
+    html_nodes('div.wiki-paragraph') %>% 
+    html_text()
+  
+  ## 여론조사 구성요소별로 분리
+  ### 여론조사개요
+  survey_title <- namu_txt[1]
+  survey_overview <- str_split_fixed(survey_title, ",", n=2)
+  
+  survey_agency <- survey_overview[1]
+  survey_date <- str_extract(survey_overview[2], pattern = "[0-9]{4}년.*일")
+  survey_method <- str_remove(survey_overview[2], pattern = ",\\s[0-9]{4}년\\s?[0-9]월.*일")
+  
+  survey_main <- namu_txt[-1]
+  
+  ### 후보자 지지율
+  survey_value <- survey_main[str_detect(survey_main, "%")]
+  
+  ### 후보자 정당
+  survey_text <- survey_main[str_detect(survey_main, "^(?!.*%)")]
+  
+  index_vec <- str_detect(survey_text, "무당층")
+  
+  location_무당층 <- which(str_detect(survey_text, "무당층"))
+  
+  survey_party <- survey_text[1:location_무당층]
+  
+  ### 후보자명
+  survey_candidate <- c(survey_text[(location_무당층+1):length(survey_text)], "무당층")
+  
+  
+  # 데이터프레임
+  seoul_sample_df <- tibble(정당 = survey_party,
+        후보자명 = survey_candidate,
+        지지율 = survey_value,
+        조사업체 = survey_agency,
+        조사방식 = survey_method,
+        조사일자 = survey_date)
+  
+  return(seoul_sample_df)
+}
+
+## 오류가 발생될 경우 예외처리
+possibly_scrap_table <- possibly(scrape_table, otherwise = "Error")
+
+## 실행 함수 -----
+
+scrape_table_by_sido <- function(sido_url) {
+  ## 시도별 URL HTML 웹페이지
+  sido_html <- read_html(sido_url) 
+  
+  ## 시도별 HTML 테이블 갯수
+  number_of_tables <- get_number_of_tables(seoul_url)
+  
+  by_sido_list <- map2(sido_url, 1:number_of_tables, possibly_scrap_table)
+  names(by_sido_list) <- 1:number_of_tables
+  
+  return(by_sido_list)
+}
+
+제주도 <- scrape_table_by_sido(sido_url[17])
+
+제주도_df <- 제주도 %>% 
+  enframe %>% 
+  mutate(check = map_dbl(value, is.data.frame)) %>% 
+  filter(check==TRUE) %>% 
+  unnest(value) 
+
+제주도_df %>% 
+  DT::datatable()
+```
+
+
+## 전체 시도 {#sido-all-by-full-sido}
+
+시도전체에 대한 여론조사 URL을 넣어 지지율을 데이터로 정리한다.
+
+```{r sido-crawl-table-all, eval = FALSE}
+
+서울특별시     <- map(sido_url[1], scrape_table_by_sido)
+부산광역시     <- map(sido_url[2], scrape_table_by_sido)
+대구광역시     <- map(sido_url[3], scrape_table_by_sido)
+인천광역시     <- map(sido_url[4], scrape_table_by_sido)
+광주광역시     <- map(sido_url[5], scrape_table_by_sido)
+대전광역시     <- map(sido_url[6], scrape_table_by_sido)
+울산광역시     <- map(sido_url[7], scrape_table_by_sido)
+세종특별자치시 <- map(sido_url[8], scrape_table_by_sido)
+경기도         <- map(sido_url[9], scrape_table_by_sido)
+강원도         <- map(sido_url[10], scrape_table_by_sido)
+충청북도       <- map(sido_url[11], scrape_table_by_sido)
+충청남도       <- map(sido_url[12], scrape_table_by_sido)
+전라북도       <- map(sido_url[13], scrape_table_by_sido)
+전라남도       <- map(sido_url[14], scrape_table_by_sido)
+경상북도       <- map(sido_url[15], scrape_table_by_sido)
+경상남도       <- map(sido_url[16], scrape_table_by_sido)
+제주특별자치도 <- map(sido_url[17], scrape_table_by_sido)
+
+제주도_df <- 제주도 %>% 
+  enframe %>% 
+  mutate(check = map_dbl(value, is.data.frame)) %>% 
+  filter(check==TRUE) %>% 
+  unnest(value) 
+
+```

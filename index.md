@@ -43,6 +43,8 @@ title: 대한민국 제21대 국회의원 선거
     - [정당정책](election-policy.html)
     - [매니페스토: 국회의원평가](election-manifesto.html)
 - SNS/소셜&rarr;[데이터 가져오기: SNS 참고](https://statkclee.github.io/ingest-data/)
+- [토론](election-debates.html)
+- [정치 후원금](election-give.html)
 
   </div>
 </div>

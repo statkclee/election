@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "대한민국 제21대 국회의원 선거"
-subtitle: "지지율"
+subtitle: "선거 데이터"
 author:
     name: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
 date: "`r Sys.Date()`"
@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 
 ```
 
-# 데이터 {#major-media}
+# 선거 데이터 {#major-media}
 
 - 중앙선거관리위원회 
     - [중앙선거관리위원회](https://www.nec.go.kr/vt/main.do)
@@ -41,7 +41,8 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
     - [정당 지지율](https://ko.wikipedia.org/wiki/대한민국의_정당_지지율)
     - [나무위키: 후보자 지지율](https://namu.wiki/w/제21대 국회의원 선거/여론조사)
     - [위키백과: 정당지지율](https://ko.wikipedia.org/wiki/대한민국_제21대_국회의원_선거_여론_조사)
-    
-    
+- [선거정보도서관: 후보자토론회](http://elecinfo.nec.go.kr/neweps/main.do)
+
+
 
 

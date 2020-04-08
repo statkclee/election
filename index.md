@@ -29,7 +29,7 @@ title: 대한민국 제21대 국회의원 선거
   <div class = "col-md-6">
 **미시 선거 데이터**
 
-- **[지지율](election-approval.html)**
+- **[지지율](election-data.html)**
     - [대통령 지지율](president_approval_survey.html)
     - [정당 지지율](party_approval_survey.html)
     - [선거구별 지지율 데이터](precinct_approval_survey_data.html)

@@ -29,7 +29,7 @@ title: 대한민국 제21대 국회의원 선거
   <div class = "col-md-6">
 **미시 선거 데이터**
 
-- **[지지율](election-data.html)**
+- **[선거 데이터](election-data.html)**
     - [대통령 지지율](president_approval_survey.html)
     - [정당 지지율](party_approval_survey.html)
     - [선거구별 지지율 데이터](precinct_approval_survey_data.html)
@@ -42,9 +42,11 @@ title: 대한민국 제21대 국회의원 선거
 - **정책(policy)**
     - [정당정책](election-policy.html)
     - [매니페스토: 국회의원평가](election-manifesto.html)
-- SNS/소셜&rarr;[데이터 가져오기: SNS 참고](https://statkclee.github.io/ingest-data/)
-- [토론](election-debates.html)
+- SNS/소셜 &rarr; [데이터 가져오기: SNS 참고](https://statkclee.github.io/ingest-data/)
+- [(정당)토론](election-debates.html)
+    - [정당연설](election-speech.html)
 - [정치 후원금](election-give.html)
+
 
   </div>
 </div>

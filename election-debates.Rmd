@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "대한민국 제21대 국회의원 선거"
-subtitle: "토론"
+subtitle: "(정당)토론"
 author:
     name: "[Tidyverse Korea](https://www.facebook.com/groups/tidyverse/)"
 date: "`r Sys.Date()`"
@@ -23,7 +23,37 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE,
 
 ```
 
+국회의원선거방송연설 주진형 비례정당
+
 # 중앙선거방송토론위원회
 
 - [중앙선거방송토론위원회](http://www.debates.go.kr/)
 - [토론 개최정보](http://www.debates.go.kr/2016_broadcast/broadcast02.php?year=2020&s_ca_name=27)
+
+# MBC 비례대표 후보자
+
+- MBC: 제21대 국회의원선거 비례대표후보자 토론회(초청1차) - [LIVE] 2020년 04월 06일
+
+<iframe width="320" height="180" src="https://www.youtube.com/embed/snsnMlhQP0s" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+# KBS 비례대표 후보자
+
+- [제21대 총선 비례대표 후보자 토론회 - 초청 1차 / KBS뉴스(News)](https://www.youtube.com/watch?v=PT55uB9ZQjk)
+
+<iframe width="320" height="180" src="https://www.youtube.com/embed/PT55uB9ZQjk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+# 후보자 연설
+
+- [MBC, 열린민주당 주진형 후보 방송연설(21대 국회의원 선거)](https://www.youtube.com/watch?v=RQu549ZNLpU)
+
+<iframe width="320" height="180" src="https://www.youtube.com/embed/RQu549ZNLpU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+- [나무위키: 제21대 국회의원 선거/토론 및 연설/중앙당](https://namu.wiki/w/%EC%A0%9C21%EB%8C%80%20%EA%B5%AD%ED%9A%8C%EC%9D%98%EC%9B%90%20%EC%84%A0%EA%B1%B0/%ED%86%A0%EB%A1%A0%20%EB%B0%8F%20%EC%97%B0%EC%84%A4/%EC%A4%91%EC%95%99%EB%8B%B9)
+
+- [제21대 총선 정강정책연설 - 더불어민주당: 이인영](https://www.youtube.com/watch?v=sKUYugam2tc)
+- [제21대 총선 정강정책연설 - 더불어민주당: 이낙연](https://www.youtube.com/watch?v=lAr5xA_y9Uo)
+- [제21대 총선 정강정책연설 - 미래통합당: 배현진](https://www.youtube.com/watch?v=s9MkJqTivOw)
+- [제21대 총선 정강정책연설 - 미래통합당: 김병민](https://www.youtube.com/watch?v=gwAz6MifB1c)
+- [제21대 총선 정강정책연설 - 민생당: 김정화](https://www.youtube.com/watch?v=MpRotZh0WR4)
+
+

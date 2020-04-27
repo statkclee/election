@@ -35,6 +35,7 @@ title: 대한민국 제21대 국회의원 선거
     - [선거구별 지지율 데이터](precinct_approval_survey_data.html)
     - [선거구별 지지율: 판세분석](precinct_approval_survey_situation.html)
         - (2020-03-31) - [선거구별 지지율](precinct_approval_survey.html)
+    - [제21대 총선결과 시각화](election-ggparliament.html)
 - [여론조사](election-polls.html)
     - [출마자 신상정보](election-candidate.html)
     - [여론조사 선거구](election-precinct.html)

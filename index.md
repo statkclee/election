@@ -45,6 +45,7 @@ title: 대한민국 제21대 국회의원 선거
 - SNS/소셜&rarr;[데이터 가져오기: SNS 참고](https://statkclee.github.io/ingest-data/)
 - [토론](election-debates.html)
 - [정치 후원금](election-give.html)
+- [분당을 2016 vs 2020](election-2016-2020.html)
 
   </div>
 </div>

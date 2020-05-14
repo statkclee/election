@@ -29,12 +29,13 @@ title: 대한민국 제21대 국회의원 선거
   <div class = "col-md-6">
 **미시 선거 데이터**
 
-- **[지지율](election-approval.html)**
+- **[선거 데이터](election-data.html)**
     - [대통령 지지율](president_approval_survey.html)
     - [정당 지지율](party_approval_survey.html)
     - [선거구별 지지율 데이터](precinct_approval_survey_data.html)
     - [선거구별 지지율: 판세분석](precinct_approval_survey_situation.html)
         - (2020-03-31) - [선거구별 지지율](precinct_approval_survey.html)
+    - [제21대 총선결과 시각화](election-ggparliament.html)
 - [여론조사](election-polls.html)
     - [출마자 신상정보](election-candidate.html)
     - [여론조사 선거구](election-precinct.html)
@@ -42,10 +43,12 @@ title: 대한민국 제21대 국회의원 선거
 - **정책(policy)**
     - [정당정책](election-policy.html)
     - [매니페스토: 국회의원평가](election-manifesto.html)
-- SNS/소셜&rarr;[데이터 가져오기: SNS 참고](https://statkclee.github.io/ingest-data/)
-- [토론](election-debates.html)
+- SNS/소셜 &rarr; [데이터 가져오기: SNS 참고](https://statkclee.github.io/ingest-data/)
+- [(정당)토론](election-debates.html)
+    - [정당연설](election-speech.html)
 - [정치 후원금](election-give.html)
 - [분당을 2016 vs 2020](election-2016-2020.html)
+
 
   </div>
 </div>

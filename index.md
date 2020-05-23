@@ -55,6 +55,9 @@ title: 대한민국 제21대 국회의원 선거
 
 ## 총선 Post Mortem
 
+- 성남시
+    - [성남시, 인구통계: 2016 vs 2020](election-sungnam-demographics-2016-2020.html)
+    - [성남시, 득표: 2016 vs 2020](election-sungnam-2016-2020.html)
 - 분당구
     - [분당구, 인구통계: 2016 vs 2020](election-bundang-demographics-2016-2020.html)
     - [분당구, 득표: 2016 vs 2020](election-bundang-2016-2020.html)

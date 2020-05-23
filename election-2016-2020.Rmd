@@ -10,9 +10,10 @@ output:
     toc: yes
     toc_float: true
     highlight: tango
-    code_folding: show
+    code_folding: hide
     number_section: true
     self_contained: true
+mainfont: NanumGothic
 editor_options: 
   chunk_output_type: console
 ---
@@ -26,7 +27,14 @@ library(rvest)
 
 ```
 
-# 동별 데이터셋 {#bundang-dataset}
+# 데이터셋: 분당을 {#bundang-dataset}
+
+- 제20대 총선(2016년)
+    - 범민주당 = 민주당(김병욱)
+    - 범미통당 = 미통당 + 무소속(임태희)
+- 제21대 총선(2020년)
+    - 범민주당 = 민주당 + 정의당 + 무소속(이나영)
+    - 범미통당 = 미통당(김민수) + 우리공화당
 
 ```{r bundang-dataset}
 library(tidyverse)
@@ -150,20 +158,64 @@ library(readxl)
 ```
 
 
+## 깔끔한 데이터셋 {#bundang-tidy-dataset}
 
-## 동별 시각화 [^reference] {#bundang-dong-viz}
+```{r bundang-eul-tidy}
+library(ggalt)
+library(extrafont)
+loadfonts()
+
+tidy_분당을 <- 분당을 %>% 
+  select(선거, 읍면동명, 범민주 = 범민주_득표율, 범미통 = 범미통_득표율) %>% 
+  gather(정당, 득표율, -선거, -읍면동명)
+```
+
+# 시각화 [^reference] {#bundang-tidy-viz}
 
 [^reference]: [Create Dumbbell Plots to Visualize Group Differences in R](https://towardsdatascience.com/create-dumbbell-plots-to-visualize-group-differences-in-r-3536b7d0a19a)
 
-```{r bundang-dong-viz}
-library(ggalt)
+## 정당별 {#bundang-tidy-party}
 
+```{r bundang-eul-tidy-party}
+tidy_분당을 %>% 
+  mutate(읍면동명 = fct_reorder(읍면동명, 득표율)) %>% 
+  spread(선거, 득표율) %>% 
+  ggplot(aes(y=읍면동명, x=`제20대`, xend=`제21대`)) +
+    geom_dumbbell(color="#e3e2e1", colour_x = "gray", colour_xend = "red",
+                dot_guide=FALSE, size=2.5, show.legend = TRUE) +
+    facet_wrap(~정당) +
+    theme_bw(base_family = "NanumGothic") +
+    labs(x="", y="") +
+    scale_x_continuous(labels = scales::percent_format(accuracy = 1)) 
+```
+
+## 동별 {#bundang-tidy-dong}
+
+```{r bundang-eul-tidy-dong}
+tidy_분당을 %>% 
+  mutate(읍면동명 = fct_reorder(읍면동명, 득표율)) %>% 
+  spread(선거, 득표율) %>% 
+  ggplot(aes(y=정당, x=`제20대`, xend=`제21대`)) +
+    geom_dumbbell(color="#e3e2e1", colour_x = "gray", colour_xend = "red",
+                dot_guide=FALSE, size=2.5, show.legend = TRUE) +
+    facet_wrap(~읍면동명) +
+    theme_bw(base_family = "NanumGothic") +
+    labs(x="", y="") +
+    scale_x_continuous(labels = scales::percent_format(accuracy = 1)) 
+```
+
+
+## 총선별  {#bundang-dong-viz}
+
+
+```{r bundang-dong-viz-election}
 blue <- "#0171CE"
 red <- "#DE4433"
 
 분당을 %>% 
   select(선거, 읍면동명, 범민주_득표율, 범미통_득표율) %>% 
   mutate(득표차 = 범민주_득표율 - 범미통_득표율) %>% 
+  mutate(읍면동명 = fct_reorder(읍면동명, 득표차)) %>% 
   ggplot() +
     geom_dumbbell(aes(y=읍면동명,  x=범민주_득표율, xend=범미통_득표율), color="#b2b2b2", size=2.5, colour_x = blue, colour_xend = red) +
     facet_wrap(~선거) +
@@ -172,13 +224,3 @@ red <- "#DE4433"
     labs(x="", y="")
 ```
 
-```{r bundang-dong-viz2, eval = FALSE}
-분당을 %>%
-  select(선거, 읍면동명, 범민주_득표율, 범미통_득표율) %>% 
-  ggplot() +
-    geom_dumbbell(aes(y=읍면동명,  x=범민주_득표율, xend=범미통_득표율), color="#b2b2b2", size=2.5, colour_x = blue, colour_xend = red) +
-    facet_wrap(~선거) +
-    scale_x_continuous(labels = scales::percent) +
-    theme_bw() +
-    labs(x="", y="")
-```

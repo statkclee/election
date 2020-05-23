@@ -47,11 +47,20 @@ title: 대한민국 제21대 국회의원 선거
 - [(정당)토론](election-debates.html)
     - [정당연설](election-speech.html)
 - [정치 후원금](election-give.html)
-- [분당을 2016 vs 2020](election-2016-2020.html)
-
 
   </div>
 </div>
+
+---
+
+## 총선 Post Mortem
+
+- 분당구
+    - [분당구, 인구통계: 2016 vs 2020](election-bundang-demographics-2016-2020.html)
+    - [분당구, 득표: 2016 vs 2020](election-bundang-2016-2020.html)
+- 분당을
+    - [인구통계: 2016 vs 2020](election-demographics-2016-2020.html)
+    - [득표: 2016 vs 2020](election-2016-2020.html)
 
 ---
 

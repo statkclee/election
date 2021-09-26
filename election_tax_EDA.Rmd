@@ -121,6 +121,7 @@ collapsibleTree(
 
 ```{r tax-dataset}
 library(readxl)
+library(tidyverse)
 
 ## 2008 년
 # tax_2008 <- read_excel("data/tax/2008 statistics/2-1-1. 예산 및 세수 실적(p.12).xls", sheet="(1)", skip=8)
@@ -225,6 +226,25 @@ tax_2018_df <- tax_2018 %>%
   mutate(연도=2018) %>% 
   select(연도, 구분, 수납액)
 
+## 2019 년
+tax_2019 <- read_excel("data/tax/2019년 발행 통계연보 파일_210902 수정/2-1-1. 예산 및 세수 실적.xlsx", sheet="(1)", skip=8)
+
+tax_2019_df <- tax_2019 %>% 
+  set_names(c("구분", "구분영어", "예산액", "징수결정액", "수납액", "불납결손액", "미수납액", "비율")) %>% 
+  filter(구분 %in% c("근로소득세", "양도소득세", "법인세", "부가가치세", "개별소비세", "상속세", "증여세", "종합부동산세", "이자소득세", "배당소득세", "종합소득세", "사업소득세")) %>%  # 취득세 없음. 
+  mutate(연도=2019) %>% 
+  select(연도, 구분, 수납액)
+
+## 2020 년
+tax_2020 <- read_excel("data/tax/2020년 통계연보 파일_210902 수정/2-1-1. 예산 및 세수 실적.xlsx", sheet="(1)", skip=8)
+
+tax_2020_df <- tax_2020 %>% 
+  set_names(c("구분", "구분영어", "예산액", "징수결정액", "수납액", "불납결손액", "미수납액", "비율")) %>% 
+  filter(구분 %in% c("근로소득세", "양도소득세", "법인세", "부가가치세", "개별소비세", "상속세", "증여세", "종합부동산세", "이자소득세", "배당소득세", "종합소득세", "사업소득세")) %>%  # 취득세 없음. 
+  mutate(연도=2020) %>% 
+  select(연도, 구분, 수납액)
+
+
 ###########################
 tax_df <- tax_2009_df %>% 
   bind_rows(tax_2010_df) %>% 
@@ -235,7 +255,9 @@ tax_df <- tax_2009_df %>%
   bind_rows(tax_2015_df) %>% 
   bind_rows(tax_2016_df) %>% 
   bind_rows(tax_2017_df) %>% 
-  bind_rows(tax_2018_df)
+  bind_rows(tax_2018_df) %>% 
+  bind_rows(tax_2019_df) %>% 
+  bind_rows(tax_2020_df)
 
 tax_df %>% 
   mutate(구분 = factor(구분, levels = c("근로소득세(갑)", "근로소득세", "법인세", "부가가치세", "개별소비세", "증여세", "상속세", "양도소득세", "종합부동산세", "이자소득세", "배당소득세", "종합소득세", "사업소득세"))) %>% 
@@ -244,7 +266,8 @@ tax_df %>%
   summarise(징수액 = sum(수납액)) %>% 
   spread(연도, 징수액) %>% 
     DT::datatable() %>% 
-    DT::formatRound(2:11, digits=1)
+    DT::formatRound(2:13, digits=1)
+
 ```
 
 ## 종부세와 근로세 {#tax-table}
@@ -268,7 +291,8 @@ tax_category_df <- tax_df %>%
 tax_category_df %>% 
   spread(연도, 수납액) %>% 
   DT::datatable() %>% 
-  DT::formatRound(2:11, digits=1)
+  DT::formatRound(2:13, digits=1)
+
 ```
 
 ## 시각화 {#tax-viz}
@@ -284,16 +308,31 @@ tax_category_df %>%
 
 
 ```{r tax-dataset-viz}
+library(gghighlight)
+extrafont::loadfonts()
+
 tax_category_df %>% 
   filter(세목 != "재산소득") %>% 
+  mutate(세목 = factor(세목, levels = c("급여사업자", "자영업자", "금융소득", "종합부동산세"))) %>% 
   ggplot(aes(x=연도, y=수납액, group=세목, color=세목)) +
-    geom_point() +
+    geom_point(size = 2) +
     geom_line() +
-    theme_bw() +
-    labs(x="", y="징수된 세금 (조원)",
-         title="급여소득자와 자영업자 10년간의 변화",
-         subtitle="국세청 국세통계(2009 - 2018)") +
-    theme(legend.position = "top")
+    # gghighlight(max(연도) >= 2020,  use_direct_label = FALSE) +
+    theme_bw(base_family = "NanumGothic") +
+    labs(x="", y ="징수된 세금 (조원)",
+         title   ="급여소득자와 자영업자 10년간의 변화",
+         caption ="자료출처: 국세청 국세통계포털(2009 - 2020), https://tasis.nts.go.kr/",
+         subtitle = "코로나 발생이후 세금납부 변화",
+         color  = "세금구분") +
+    theme(legend.position = "right",
+          legend.text = element_text(size = 13, colour = "black", family = "NanumBarunpen", face="bold"),
+          strip.text.x = element_text(size = 15, colour = "black", family = "NanumMyeongjo", face="bold"),
+          strip.background=element_rect(fill="gray95"),
+          axis.text.x = element_text(face="bold", size=13, angle=0),
+          axis.text.y = element_text(face="bold", size=13, angle=0),
+          plot.title=element_text(size=20, face="bold", family = "NanumBarunpen"),
+          plot.caption = element_text(face="bold", size=13, colour="grey10", family = "NanumBarunpen"),
+          plot.subtitle=element_text(face="bold", size=13, colour="grey10", family = "NanumBarunpen")) 
 ```
 
 ### 인터랙티브 시각화 {#tax-viz-interactive}
